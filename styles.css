@@ -522,3 +522,81 @@ footer{padding:80px 0 36px;background:var(--bg)}
   .pain::after,.svc::before{transition:none !important;transform:none !important}
   .hero-top,.h1,.hero-foot>*{animation:none !important;opacity:1 !important;transform:none !important}
 }
+
+/* ============================================================
+   Responsive v3 — mobile menu (no-JS) + tablet + ultra-small
+   ============================================================ */
+
+/* Long display words shouldn't overflow narrow phones */
+.h1{overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+
+/* Disclosure: summary hidden on desktop, nav-links always shown */
+.nav-disclosure summary{display:none;list-style:none;cursor:pointer}
+.nav-disclosure summary::-webkit-details-marker{display:none}
+.nav-disclosure summary::marker{content:""}
+.nav-disclosure .nav-links{display:flex !important}
+
+/* Tablet (720–1100): keep 3-col pains and 2-col footer */
+@media (min-width:720px) and (max-width:1100px){
+  .pains-grid{grid-template-columns:repeat(3,1fr);gap:14px}
+  .pain{padding:30px 24px}
+  .pain h3{font-size:26px}
+  .foot-top{grid-template-columns:repeat(2,1fr);gap:32px}
+  .hero-foot{grid-template-columns:1fr;gap:28px}
+}
+
+/* Mobile (≤1100): hamburger + dropdown panel */
+@media (max-width:1100px){
+  .nav-inner{position:relative}
+  .nav-disclosure summary{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:44px;height:44px;border-radius:50%;
+    border:1px solid var(--line-2);background:transparent;
+    transition:background .2s ease;
+  }
+  .nav-disclosure summary:hover{background:var(--bg-3)}
+  .nav-disclosure .nav-links{display:none !important}
+  .nav-disclosure[open] .nav-links{
+    display:flex !important;flex-direction:column;gap:2px;
+    position:absolute;top:calc(100% + 14px);right:8px;
+    min-width:240px;
+    background:rgba(10,10,15,.92);
+    backdrop-filter:blur(20px) saturate(160%);
+    -webkit-backdrop-filter:blur(20px) saturate(160%);
+    border:1px solid var(--line-2);
+    border-radius:20px;padding:10px;z-index:60;
+  }
+  .nav-disclosure[open] .nav-links a{
+    padding:14px 18px;font-size:16px;border-radius:14px;color:var(--ink);
+  }
+  .nav-disclosure[open] .nav-links a:hover{background:var(--bg-3)}
+  /* Hamburger morphs to X when open */
+  .hamb{position:relative;display:block;width:18px;height:2px;background:var(--ink);transition:background .2s}
+  .hamb::before,.hamb::after{content:"";position:absolute;left:0;width:18px;height:2px;background:var(--ink);transition:transform .25s ease}
+  .hamb::before{top:-6px}
+  .hamb::after{top:6px}
+  .nav-disclosure[open] .hamb{background:transparent}
+  .nav-disclosure[open] .hamb::before{transform:translateY(6px) rotate(45deg)}
+  .nav-disclosure[open] .hamb::after{transform:translateY(-6px) rotate(-45deg)}
+}
+
+/* Ultra-small phones (≤380px) */
+@media (max-width:380px){
+  .container{padding:0 14px}
+  section{padding:64px 0}
+  .hero{padding:32px 0 28px}
+  .h1{font-size:clamp(36px,11vw,52px);letter-spacing:-0.04em}
+  .sec-title{font-size:clamp(34px,9vw,52px)}
+  .marquee-track{font-size:28px}
+  .marquee.alt .marquee-track{font-size:22px}
+  .final-card{padding:60px 18px;border-radius:20px}
+  .pain{padding:28px 22px}
+  .pain h3{font-size:24px}
+  .mf-item p{font-size:20px}
+  .hero-sub{font-size:17px}
+}
+
+/* Reduced-motion: don't animate the hamburger lines */
+@media (prefers-reduced-motion: reduce){
+  .hamb,.hamb::before,.hamb::after{transition:none !important}
+}
