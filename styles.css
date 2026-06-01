@@ -901,3 +901,126 @@ footer{padding:80px 0 36px;background:var(--bg)}
 @media (prefers-reduced-motion: reduce){
   .cookie-banner,.mobile-cta,.work,.member{transition:none !important}
 }
+
+/* ============================================================
+   v4 — Minimal homepage (one disruptive screen + 3 questions)
+   ============================================================ */
+
+/* Page wrapper when in minimal mode */
+.page-min{scroll-behavior:smooth}
+
+/* HERO BRIGHT — repurposes the .final-card style at full viewport */
+.final.is-hero{padding:0;margin-top:-12px}
+.final.is-hero .final-card{
+  margin:0;border-radius:0;
+  min-height:100dvh;
+  padding:160px 60px 80px;
+  display:flex;align-items:center;justify-content:center;
+}
+.final.is-hero h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(56px,9vw,148px);
+  line-height:.92;letter-spacing:-0.045em;font-weight:500;
+  margin:0;text-wrap:balance;
+}
+.final.is-hero h1 .serif{color:var(--bg)}
+.final.is-hero p{
+  margin:32px auto 40px;
+  font-size:clamp(17px,1.6vw,22px);
+  max-width:580px;line-height:1.4;font-weight:500;color:var(--bg);
+}
+.final.is-hero p b{font-weight:600}
+.final.is-hero .final-meta{
+  margin-top:48px;
+  font-weight:500;color:var(--bg);
+  letter-spacing:.08em;
+}
+
+/* Entrance — staggered rise on first paint */
+@keyframes hero-rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.final.is-hero .final-eyebrow,
+.final.is-hero h1,
+.final.is-hero p,
+.final.is-hero .btn-primary,
+.final.is-hero .final-meta{
+  animation:hero-rise .8s cubic-bezier(.2,.7,.2,1) both;
+}
+.final.is-hero h1{animation-delay:.08s}
+.final.is-hero p{animation-delay:.22s}
+.final.is-hero .btn-primary{animation-delay:.34s}
+.final.is-hero .final-meta{animation-delay:.46s}
+
+/* Hide decorative blobs / overlays when in minimal-page mode */
+.page-min .blob{display:none}
+
+/* ========= QA (dark) — 3 questions and a closing CTA ========= */
+.qa{
+  background:var(--bg);
+  padding:120px 0 100px;
+  border-top:1px solid var(--line);
+}
+.qa-head{margin-bottom:48px;max-width:880px}
+.qa-eyebrow{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:14px;
+}
+.qa-eyebrow::before{content:"— "}
+.qa-title{
+  font-size:clamp(40px,5.4vw,72px);
+  line-height:.98;letter-spacing:-0.035em;font-weight:500;
+  color:var(--ink);margin:0;text-wrap:balance;
+}
+.qa-title .serif{color:var(--ink-2)}
+
+/* The accordion items reuse the existing .q styles; we just nudge sizing on QA */
+.qa-item{max-width:880px}
+.qa-item summary{font-size:clamp(20px,2.2vw,26px)}
+.qa-item .a{max-width:780px;font-size:16.5px}
+
+/* Closing CTA below the 3 questions */
+.qa-foot{
+  margin-top:56px;padding-top:36px;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;align-items:center;gap:18px 28px;
+}
+.qa-btn{font-size:16px;padding:18px 26px}
+.qa-note{color:var(--ink-3);font-size:14px}
+.qa-note a{color:var(--lime);border-bottom:1px solid var(--lime)}
+
+/* ========= FOOTER MIN ========= */
+.footer-min{
+  display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:start;
+  padding-bottom:48px;border-bottom:1px solid var(--line);
+}
+.footer-meta-block{
+  display:flex;flex-direction:column;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.04em;
+  color:var(--ink-2);align-items:flex-end;
+}
+.footer-meta-block a{color:var(--ink);font-size:15px;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.01em;transition:color .2s}
+.footer-meta-block a:hover{color:var(--lime)}
+
+/* Responsive */
+@media (max-width:1100px){
+  .final.is-hero .final-card{padding:120px 32px 64px}
+  .footer-min{grid-template-columns:1fr;gap:24px}
+  .footer-meta-block{align-items:flex-start}
+}
+@media (max-width:560px){
+  .final.is-hero .final-card{padding:100px 20px 56px;min-height:100svh}
+  .final.is-hero h1{font-size:clamp(40px,10vw,68px)}
+  .final.is-hero p{margin:24px auto 32px;font-size:16px}
+  .final.is-hero .final-meta{margin-top:32px;flex-direction:column;gap:8px}
+  .qa{padding:80px 0 64px}
+  .qa-head{margin-bottom:32px}
+  .qa-foot{flex-direction:column;align-items:flex-start;gap:16px}
+}
+
+/* Reduced-motion */
+@media (prefers-reduced-motion: reduce){
+  .final.is-hero .final-eyebrow,
+  .final.is-hero h1,
+  .final.is-hero p,
+  .final.is-hero .btn-primary,
+  .final.is-hero .final-meta{animation:none !important;opacity:1 !important;transform:none !important}
+}
