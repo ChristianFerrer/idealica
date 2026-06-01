@@ -395,3 +395,130 @@ footer{padding:80px 0 36px;background:var(--bg)}
   .blob{animation:none}
   .marquee-track{animation:none;transform:none}
 }
+
+/* ============================================================
+   v2 — bolder, more impactful (keeps the vivid brand palette)
+   Inspired by Kinetic Brutalism + Kinetic Typography + Hero-Centric
+   ============================================================ */
+
+/* HERO — oversize H1, glow on accent words, conic halo, staggered entrance */
+.h1{font-size:clamp(64px,13.5vw,220px);letter-spacing:-0.055em;font-weight:600}
+.h1 .word.lime{color:var(--lime);text-shadow:0 0 60px rgba(212,255,58,.28)}
+.h1 .word.mag{color:var(--magenta);text-shadow:0 0 60px rgba(255,61,127,.32)}
+
+/* Kinetic gradient text — applied to a key hero word */
+.kin{
+  background-image:linear-gradient(90deg,var(--lime),var(--magenta),var(--orange),var(--cobalt),var(--violet),var(--lime));
+  background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  text-shadow:none;
+  animation:kin 6s linear infinite;
+}
+@keyframes kin{to{background-position:300% 0}}
+
+/* Conic halo behind the hero */
+.hero{position:relative;overflow:hidden}
+.hero::after{
+  content:"";position:absolute;width:min(880px,90vw);aspect-ratio:1/1;
+  top:-12%;right:-12%;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--magenta),var(--cobalt),var(--violet),var(--orange),var(--lime),var(--magenta));
+  filter:blur(120px);opacity:.28;z-index:0;
+  animation:halo 28s linear infinite;pointer-events:none;
+}
+@keyframes halo{to{transform:rotate(360deg)}}
+
+/* Staggered hero entrance */
+@keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+.hero-top,.h1,.hero-foot>*{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+.h1{animation-delay:.08s}
+.hero-foot>*:nth-child(1){animation-delay:.22s}
+.hero-foot>*:nth-child(2){animation-delay:.34s}
+.hero-foot>*:nth-child(3){animation-delay:.46s}
+
+/* Section titles — bigger */
+.sec-title{font-size:clamp(48px,7vw,108px);letter-spacing:-0.04em;font-weight:600}
+
+/* PAINS — full card-flood inversion on hover */
+.pain{position:relative;overflow:hidden;isolation:isolate}
+.pain>*{position:relative;z-index:1;transition:color .35s ease}
+.pain::after{
+  content:"";position:absolute;inset:0;background:var(--c,var(--lime));
+  transform:translateY(101%);transition:transform .5s cubic-bezier(.65,.05,.36,1);
+  z-index:0;pointer-events:none;
+}
+.pain:hover::after{transform:translateY(0)}
+.pain:hover{border-color:var(--c)}
+.pain:hover h3,.pain:hover p,.pain:hover .arrow-bg,.pain:hover h3 .serif{color:var(--bg)}
+.pain:hover .pain-num{background:var(--bg);color:var(--c);transition:background .3s,color .3s}
+/* c3 (cobalt) needs LIGHT text on the flood for AA contrast */
+.pain.c3:hover h3,.pain.c3:hover p,.pain.c3:hover .arrow-bg,.pain.c3:hover h3 .serif{color:var(--ink)}
+.pain.c3:hover .pain-num{background:var(--ink);color:var(--bg)}
+
+/* SERVICES — slide-in full-row flood + text inversion */
+.svc{overflow:hidden;isolation:isolate}
+.svc::before{
+  content:"";position:absolute;inset:0;background:var(--cAcc);
+  transform:translateX(-101%);transition:transform .55s cubic-bezier(.65,.05,.36,1);
+  opacity:1;z-index:-1;pointer-events:none;border-radius:0;
+}
+.svc:hover::before{transform:translateX(0);opacity:1}
+.svc>*{transition:color .3s ease}
+.svc:hover .svc-num,.svc:hover .svc-title .tag,.svc:hover .svc-desc,.svc:hover .svc-desc .price,.svc:hover .svc-title h3,.svc:hover .svc-title h3 .serif,.svc:hover .svc-desc .price b{color:var(--bg)}
+.svc:hover .svc-cta{background:var(--bg);color:var(--cAcc);border-color:var(--bg)}
+.svc:hover .svc-cta .arr{background:var(--cAcc);color:var(--bg)}
+/* c3 svc — invert to LIGHT text */
+.svc.c3:hover .svc-num,.svc.c3:hover .svc-title .tag,.svc.c3:hover .svc-desc,.svc.c3:hover .svc-desc .price,.svc.c3:hover .svc-title h3,.svc.c3:hover .svc-title h3 .serif,.svc.c3:hover .svc-desc .price b{color:var(--ink)}
+.svc.c3:hover .svc-cta{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.svc.c3:hover .svc-cta .arr{background:var(--bg);color:var(--ink)}
+.svc-title h3{font-size:clamp(28px,3.4vw,44px)}
+
+/* PROCESS — dotted timeline connector + bigger numbers */
+.steps{position:relative}
+.steps::before{
+  content:"";position:absolute;left:28px;right:28px;top:68px;height:2px;
+  background-image:linear-gradient(90deg,var(--line-2) 50%,transparent 50%);
+  background-size:14px 2px;background-repeat:repeat-x;
+  z-index:0;pointer-events:none;
+}
+.step{position:relative;z-index:1}
+.step-num{width:64px;height:64px;font-size:32px}
+
+/* MANIFESTO items bigger */
+.mf-item p{font-size:30px}
+
+/* MARQUEE — pause on hover + 2nd alt row reversed */
+.marquee-track{font-size:clamp(36px,5.4vw,64px);gap:56px}
+.marquee:hover .marquee-track{animation-play-state:paused}
+.marquee.alt{border-top:0}
+.marquee.alt .marquee-track{
+  animation:scroll-rev 50s linear infinite;
+  font-size:clamp(28px,4vw,48px);
+}
+@keyframes scroll-rev{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+
+/* FINAL CTA — bigger headline */
+.final h2{font-size:clamp(56px,9vw,148px)}
+
+/* Mobile overrides for the new v2 scale */
+@media (max-width:1100px){
+  .steps::before{display:none}
+  .sec-title{font-size:clamp(40px,7vw,72px)}
+  .mf-item p{font-size:24px}
+  .h1{font-size:clamp(56px,12vw,140px);letter-spacing:-0.05em}
+}
+@media (max-width:560px){
+  .marquee-track{font-size:32px}
+  .marquee.alt .marquee-track{font-size:24px}
+  .step-num{width:56px;height:56px;font-size:28px}
+  .h1{font-size:clamp(44px,12vw,72px)}
+  .final h2{font-size:clamp(40px,11vw,72px)}
+  .hero::after{opacity:.18}
+}
+
+/* Reduced-motion safety net for v2 effects */
+@media (prefers-reduced-motion: reduce){
+  .hero::after,.kin,.marquee.alt .marquee-track{animation:none !important}
+  .pain::after,.svc::before{transition:none !important;transform:none !important}
+  .hero-top,.h1,.hero-foot>*{animation:none !important;opacity:1 !important;transform:none !important}
+}
