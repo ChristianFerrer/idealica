@@ -1041,6 +1041,31 @@ footer{padding:80px 0 36px;background:var(--bg)}
   .qa-form-row .qa-btn{justify-content:center}
 }
 
+/* ---- Form inside the bright gradient hero ---- */
+.is-hero .qa-form{
+  margin:32px auto 0;padding-top:0;border-top:0;
+  max-width:560px;text-align:left;
+}
+.is-hero .qa-form textarea,
+.is-hero .qa-form input[type="email"]{
+  background:rgba(10,10,15,.92);
+  color:var(--ink);
+  border:1px solid rgba(10,10,15,.85);
+}
+.is-hero .qa-form textarea::placeholder,
+.is-hero .qa-form input::placeholder{color:var(--ink-3)}
+.is-hero .qa-form textarea:focus,
+.is-hero .qa-form input:focus{
+  border-color:var(--ink);background:var(--bg);
+  box-shadow:0 0 0 3px rgba(212,255,58,.35);
+}
+.is-hero .qa-form-success{
+  background:rgba(10,10,15,.85);border-color:rgba(10,10,15,.92);
+  color:var(--ink);
+}
+.is-hero .qa-form-success a{color:var(--lime);border-color:var(--lime)}
+.is-hero .final-meta{margin-top:40px}
+
 /* ========= FOOTER MIN ========= */
 .footer-min{
   display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:start;

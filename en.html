@@ -16,7 +16,7 @@
 })();
 </script>
 <title>Idealica — Boutique digital studio in Barcelona</title>
-<meta name="description" content="Tell us what's keeping you up. A 30-minute call to figure out what you need. Idealica, boutique digital studio from Barcelona." />
+<meta name="description" content="Tell us what's keeping you up. Boutique digital studio from Barcelona. Fast reply, no strings." />
 <link rel="canonical" href="https://idealica.vercel.app/en.html" />
 <link rel="alternate" hreflang="es" href="https://idealica.vercel.app/" />
 <link rel="alternate" hreflang="en" href="https://idealica.vercel.app/en.html" />
@@ -24,7 +24,7 @@
 
 <!-- Open Graph -->
 <meta property="og:title" content="Idealica — Boutique digital studio in Barcelona" />
-<meta property="og:description" content="Tell us what's keeping you up. A 30-minute call. No strings." />
+<meta property="og:description" content="Tell us what's keeping you up. Fast reply, no strings." />
 <meta property="og:url" content="https://idealica.vercel.app/en.html" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://idealica.vercel.app/og.svg" />
@@ -34,7 +34,7 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Idealica — Boutique digital studio in Barcelona" />
-<meta name="twitter:description" content="Tell us what's keeping you up. A 30-minute call. No strings." />
+<meta name="twitter:description" content="Tell us what's keeping you up. Fast reply, no strings." />
 <meta name="twitter:image" content="https://idealica.vercel.app/og.svg" />
 
 <!-- Structured data -->
@@ -74,7 +74,8 @@
   <div class="nav-inner">
     <a class="brand" href="#"><span class="star"></span>Idealica</a>
     <a class="lang-switch" href="/" hreflang="es" aria-label="Ver en español">ES</a>
-    <a class="nav-cta" href="https://cal.com/idealica/diagnostico" target="_blank" rel="noopener"><span class="dot"></span>Let's talk</a>
+    <!-- TODO: replace 34000000000 with your real WhatsApp number (digits only, country code first) -->
+    <a class="nav-cta" href="https://wa.me/34000000000?text=Hi%20Idealica%2C%20I%27d%20like%20to%20talk%20about%20a%20project." target="_blank" rel="noopener"><span class="dot"></span>Let's talk</a>
   </div>
 </nav>
 
@@ -83,18 +84,28 @@
   <section class="final is-hero">
     <div class="final-card">
       <div class="final-inner">
-        <div class="final-eyebrow">● Let's talk · reply &lt; 24h</div>
+        <div class="final-eyebrow">● Let's talk · fast reply</div>
         <h1>
           Tell us what's<br/>
           <span class="serif">keeping you up</span>.
         </h1>
-        <p>A 30-minute call. No strings, no endless form, no salespeople behind it.</p>
-        <!-- TODO: replace https://cal.com/idealica/diagnostico with your real Cal.com URL -->
-        <a href="https://cal.com/idealica/diagnostico" target="_blank" rel="noopener" class="btn btn-primary">Book a call · 30 min<span class="arr">→</span></a>
+        <form class="qa-form hero-form" id="form-cuentanoslo" data-msg-form novalidate>
+          <label class="visually-hidden" for="msg-text">Your message</label>
+          <textarea id="msg-text" name="message" rows="3" placeholder="Tell us here. No filters." required></textarea>
+          <div class="qa-form-row">
+            <label class="visually-hidden" for="msg-email">Your email</label>
+            <input id="msg-email" name="email" type="email" placeholder="your@email.com" required autocomplete="email" />
+            <button type="submit" class="btn btn-primary qa-btn">Send<span class="arr">→</span></button>
+          </div>
+          <p class="qa-form-success" hidden role="status" aria-live="polite">
+            Opening your mail client. If it doesn't open, write to <a href="mailto:hola@idealica.com">hola@idealica.com</a>.
+          </p>
+        </form>
         <div class="final-meta">
-          <span>↘ 1 click · no form</span>
-          <span>↘ Reply &lt; 24h</span>
-          <span>↘ No strings</span>
+          <span>↘ 1 click</span>
+          <span>↘ no form</span>
+          <span>↘ fast reply</span>
+          <span>↘ no strings</span>
         </div>
       </div>
     </div>
@@ -128,23 +139,10 @@
         </div>
       </div>
 
-      <form class="qa-form" data-msg-form novalidate>
-        <label class="visually-hidden" for="msg-text">Your message</label>
-        <textarea id="msg-text" name="message" rows="4" placeholder="Tell us here. No filters." required></textarea>
-        <div class="qa-form-row">
-          <label class="visually-hidden" for="msg-email">Your email</label>
-          <input id="msg-email" name="email" type="email" placeholder="your@email.com" required autocomplete="email" />
-          <button type="submit" class="btn btn-primary qa-btn">Send<span class="arr">→</span></button>
-        </div>
-        <p class="qa-form-note">
-          Reply in under 24h. Or if you'd rather talk:
-          <!-- TODO: replace https://cal.com/idealica/diagnostico with your real Cal.com URL -->
-          <a href="https://cal.com/idealica/diagnostico" target="_blank" rel="noopener">book a 30-min call →</a>
-        </p>
-        <p class="qa-form-success" hidden role="status" aria-live="polite">
-          Opening your mail client to send the message. If it doesn't open, write to <a href="mailto:hola@idealica.com">hola@idealica.com</a>.
-        </p>
-      </form>
+      <div class="qa-foot">
+        <a href="#form-cuentanoslo" class="btn btn-primary qa-btn">↑ Tell us<span class="arr">→</span></a>
+        <span class="qa-note">or via WhatsApp · fast reply</span>
+      </div>
     </div>
   </section>
 
