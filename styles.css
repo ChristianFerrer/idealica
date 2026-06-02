@@ -63,8 +63,8 @@ a,button,summary{cursor:pointer;touch-action:manipulation}
   max-width:1340px;margin:0 auto;
 }
 .brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:600;letter-spacing:-0.02em}
-.brand .star{display:inline-block;width:14px;height:14px;background:var(--lime);border-radius:50%;animation:spin 8s linear infinite;position:relative}
-.brand .star::before{content:"";position:absolute;inset:-3px;background:var(--lime);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:spin 4s linear infinite reverse}
+.brand .star{display:inline-block;width:14px;height:14px;background:var(--lime);border-radius:50%;position:relative}
+.brand .star::before{content:"";position:absolute;inset:-3px;background:var(--lime);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .nav-links{display:flex;gap:6px;align-items:center}
 .nav-links a{font-size:14px;color:var(--ink-2);padding:8px 14px;border-radius:999px;transition:.2s}
