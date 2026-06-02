@@ -83,4 +83,47 @@
       a.addEventListener('click', () => { disclosure.open = false; });
     });
   }
+
+  // ───────────────────────────────────────────────────────
+  // Remember language choice when the user clicks the switcher
+  // (the head-level redirect script honors this preference)
+  // ───────────────────────────────────────────────────────
+  $$('.lang-switch').forEach(a => {
+    a.addEventListener('click', () => {
+      const href = a.getAttribute('href') || '';
+      const lang = href === '/en.html' ? 'en' : 'es';
+      try { localStorage.setItem('idealica-lang', lang); } catch (_) {}
+    });
+  });
+
+  // ───────────────────────────────────────────────────────
+  // Message form — opens user's mail client with pre-filled body.
+  // TODO: replace with a Formspree / Resend / Vercel function call
+  // for inline submission without leaving the page.
+  // ───────────────────────────────────────────────────────
+  const msgForm = $('[data-msg-form]');
+  if (msgForm) {
+    msgForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const msgEl = $('[name="message"]', msgForm);
+      const emailEl = $('[name="email"]', msgForm);
+      const msg = (msgEl?.value || '').trim();
+      const email = (emailEl?.value || '').trim();
+      if (!msg || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        if (!msg) msgEl?.focus();
+        else emailEl?.focus();
+        return;
+      }
+      const subject = document.documentElement.lang === 'en'
+        ? 'Tell us · Idealica'
+        : 'Cuéntanoslo · Idealica';
+      const body = msg + '\n\n— ' + email;
+      const url = 'mailto:hola@idealica.com'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body);
+      const success = $('.qa-form-success', msgForm);
+      if (success) success.hidden = false;
+      window.location.href = url;
+    });
+  }
 })();

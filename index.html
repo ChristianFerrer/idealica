@@ -3,6 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>
+/* Auto-redirect to /en.html if device language isn't Spanish.
+   Respects user choice (localStorage) and ?lang= override. */
+(function(){
+  try{
+    if(new URL(location.href).searchParams.has('lang')) return;
+    if(localStorage.getItem('idealica-lang')) return;
+    var lang=(navigator.language||'es').slice(0,2).toLowerCase();
+    if(lang!=='es') location.replace('/en.html');
+  }catch(e){}
+})();
+</script>
 <title>Idealica — Estudio digital boutique en Barcelona</title>
 <meta name="description" content="Cuéntanos qué te quita el sueño. Una llamada de 30 minutos para descubrir qué necesitas. Idealica, estudio digital boutique en Barcelona." />
 <link rel="canonical" href="https://idealica.vercel.app/" />
@@ -118,10 +130,23 @@
         </div>
       </div>
 
-      <div class="qa-foot">
-        <a href="https://cal.com/idealica/diagnostico" target="_blank" rel="noopener" class="btn btn-primary qa-btn">Cuéntanoslo<span class="arr">→</span></a>
-        <span class="qa-note">o escribe a <a href="mailto:hola@idealica.com">hola@idealica.com</a> · respuesta &lt; 24h</span>
-      </div>
+      <form class="qa-form" data-msg-form novalidate>
+        <label class="visually-hidden" for="msg-text">Tu mensaje</label>
+        <textarea id="msg-text" name="message" rows="4" placeholder="Cuéntanoslo aquí. Sin filtros." required></textarea>
+        <div class="qa-form-row">
+          <label class="visually-hidden" for="msg-email">Tu email</label>
+          <input id="msg-email" name="email" type="email" placeholder="tu@email.com" required autocomplete="email" />
+          <button type="submit" class="btn btn-primary qa-btn">Enviar<span class="arr">→</span></button>
+        </div>
+        <p class="qa-form-note">
+          Respuesta en menos de 24h. O si prefieres hablar:
+          <!-- TODO: replace https://cal.com/idealica/diagnostico with your real Cal.com URL -->
+          <a href="https://cal.com/idealica/diagnostico" target="_blank" rel="noopener">reservar llamada de 30 min →</a>
+        </p>
+        <p class="qa-form-success" hidden role="status" aria-live="polite">
+          Abrimos tu cliente de correo para que envíes el mensaje. Si no se abre, escribe directamente a <a href="mailto:hola@idealica.com">hola@idealica.com</a>.
+        </p>
+      </form>
     </div>
   </section>
 
