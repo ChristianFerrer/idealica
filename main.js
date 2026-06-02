@@ -106,18 +106,22 @@
     msgForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const msgEl = $('[name="message"]', msgForm);
+      const nameEl = $('[name="name"]', msgForm);
       const emailEl = $('[name="email"]', msgForm);
       const msg = (msgEl?.value || '').trim();
+      const name = (nameEl?.value || '').trim();
       const email = (emailEl?.value || '').trim();
-      if (!msg || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+      if (!msg || !name || !emailOk) {
         if (!msg) msgEl?.focus();
+        else if (!name) nameEl?.focus();
         else emailEl?.focus();
         return;
       }
       const subject = document.documentElement.lang === 'en'
         ? 'Tell us · Idealica'
         : 'Cuéntanoslo · Idealica';
-      const body = msg + '\n\n— ' + email;
+      const body = msg + '\n\n— ' + name + '\n  ' + email;
       const url = 'mailto:hola@idealica.com'
         + '?subject=' + encodeURIComponent(subject)
         + '&body=' + encodeURIComponent(body);

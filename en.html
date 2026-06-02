@@ -84,7 +84,6 @@
   <section class="final is-hero">
     <div class="final-card">
       <div class="final-inner">
-        <div class="final-eyebrow">● Let's talk · fast reply</div>
         <h1>
           Tell us what's<br/>
           <span class="serif">keeping you up</span>.
@@ -94,6 +93,8 @@
           <label class="visually-hidden" for="msg-text">Your message</label>
           <textarea id="msg-text" name="message" rows="3" placeholder="Tell us here. No filters." required></textarea>
           <div class="qa-form-row">
+            <label class="visually-hidden" for="msg-name">Your name</label>
+            <input id="msg-name" name="name" type="text" placeholder="Your name" required autocomplete="name" />
             <label class="visually-hidden" for="msg-email">Your email</label>
             <input id="msg-email" name="email" type="email" placeholder="your@email.com" required autocomplete="email" />
             <button type="submit" class="btn btn-primary qa-btn">Send<span class="arr">→</span></button>

@@ -1003,6 +1003,7 @@ footer{padding:80px 0 36px;background:var(--bg)}
   display:flex;flex-direction:column;gap:14px;
 }
 .qa-form textarea,
+.qa-form input[type="text"],
 .qa-form input[type="email"]{
   width:100%;
   background:var(--bg-2);color:var(--ink);
@@ -1013,6 +1014,7 @@ footer{padding:80px 0 36px;background:var(--bg)}
   transition:border-color .2s ease,background .2s ease;
 }
 .qa-form textarea{min-height:120px}
+.qa-form input[type="text"],
 .qa-form input[type="email"]{padding:16px 20px;min-height:54px}
 .qa-form textarea::placeholder,
 .qa-form input::placeholder{color:var(--ink-3)}
@@ -1021,7 +1023,8 @@ footer{padding:80px 0 36px;background:var(--bg)}
 .qa-form-row{
   display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;
 }
-.qa-form-row input[type="email"]{flex:1 1 260px;min-width:0}
+.qa-form-row input[type="text"]{flex:1 1 180px;min-width:0}
+.qa-form-row input[type="email"]{flex:1 1 200px;min-width:0}
 .qa-form-row .qa-btn{
   flex:0 0 auto;min-height:54px;
 }
@@ -1047,6 +1050,7 @@ footer{padding:80px 0 36px;background:var(--bg)}
   max-width:560px;text-align:left;
 }
 .is-hero .qa-form textarea,
+.is-hero .qa-form input[type="text"],
 .is-hero .qa-form input[type="email"]{
   background:rgba(10,10,15,.92);
   color:var(--ink);

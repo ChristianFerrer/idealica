@@ -85,7 +85,6 @@
   <section class="final is-hero">
     <div class="final-card">
       <div class="final-inner">
-        <div class="final-eyebrow">● Hablemos · respuesta rápida</div>
         <h1>
           Cuéntanos qué<br/>
           te <span class="serif">quita el sueño</span>.
@@ -95,6 +94,8 @@
           <label class="visually-hidden" for="msg-text">Tu mensaje</label>
           <textarea id="msg-text" name="message" rows="3" placeholder="Cuéntanoslo aquí. Sin filtros." required></textarea>
           <div class="qa-form-row">
+            <label class="visually-hidden" for="msg-name">Tu nombre</label>
+            <input id="msg-name" name="name" type="text" placeholder="Tu nombre" required autocomplete="name" />
             <label class="visually-hidden" for="msg-email">Tu email</label>
             <input id="msg-email" name="email" type="email" placeholder="tu@email.com" required autocomplete="email" />
             <button type="submit" class="btn btn-primary qa-btn">Enviar<span class="arr">→</span></button>
