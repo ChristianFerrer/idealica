@@ -1053,7 +1053,7 @@ footer{padding:80px 0 36px;background:var(--bg)}
   border:1px solid rgba(10,10,15,.85);
 }
 .is-hero .qa-form textarea::placeholder,
-.is-hero .qa-form input::placeholder{color:var(--ink-3)}
+.is-hero .qa-form input::placeholder{color:#FFFFFF;opacity:1}
 .is-hero .qa-form textarea:focus,
 .is-hero .qa-form input:focus{
   border-color:var(--ink);background:var(--bg);
