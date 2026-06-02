@@ -1010,23 +1010,25 @@ footer{padding:80px 0 36px;background:var(--bg)}
   border:1px solid var(--line-2);border-radius:18px;
   padding:18px 20px;
   font-family:inherit;font-size:16px;line-height:1.5;
-  resize:vertical;
   transition:border-color .2s ease,background .2s ease;
+  -webkit-appearance:none;appearance:none;
 }
-.qa-form textarea{min-height:200px}
+.qa-form textarea{min-height:200px;resize:vertical}
 .qa-form input[type="text"],
-.qa-form input[type="email"]{padding:10px 18px;min-height:0;line-height:1.4}
+.qa-form input[type="email"]{
+  padding:0 18px;height:46px;min-height:0;line-height:46px;
+}
 .qa-form textarea::placeholder,
 .qa-form input::placeholder{color:var(--ink-3)}
 .qa-form textarea:focus,
 .qa-form input:focus{outline:none;border-color:var(--lime);background:var(--bg-3)}
 .qa-form-row{
-  display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap;
 }
 .qa-form-row input[type="text"]{flex:1 1 180px;min-width:0}
 .qa-form-row input[type="email"]{flex:1 1 200px;min-width:0}
 .qa-form-row .qa-btn{
-  flex:0 0 auto;min-height:0;padding:10px 22px;font-size:15px;
+  flex:0 0 auto;min-height:0;height:46px;padding:0 22px;font-size:15px;
 }
 .qa-form-note{
   font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.04em;
