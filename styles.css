@@ -1004,7 +1004,8 @@ footer{padding:80px 0 36px;background:var(--bg)}
 }
 .qa-form textarea,
 .qa-form input[type="text"],
-.qa-form input[type="email"]{
+.qa-form input[type="email"],
+.qa-form input[type="tel"]{
   width:100%;
   background:var(--bg-2);color:var(--ink);
   border:1px solid var(--line-2);border-radius:18px;
@@ -1015,7 +1016,8 @@ footer{padding:80px 0 36px;background:var(--bg)}
 }
 .qa-form textarea{min-height:200px;resize:vertical}
 .qa-form input[type="text"],
-.qa-form input[type="email"]{
+.qa-form input[type="email"],
+.qa-form input[type="tel"]{
   padding:0 18px;height:46px;min-height:0;line-height:46px;
 }
 .qa-form textarea::placeholder,
@@ -1026,7 +1028,8 @@ footer{padding:80px 0 36px;background:var(--bg)}
   display:flex;gap:14px;align-items:center;flex-wrap:wrap;
 }
 .qa-form-row input[type="text"]{flex:1 1 180px;min-width:0}
-.qa-form-row input[type="email"]{flex:1 1 200px;min-width:0}
+.qa-form-row input[type="email"],
+.qa-form-row input[type="tel"]{flex:1 1 200px;min-width:0}
 .qa-form-row .qa-btn{
   flex:0 0 auto;min-height:0;height:46px;padding:0 22px;font-size:15px;
 }
@@ -1046,6 +1049,7 @@ footer{padding:80px 0 36px;background:var(--bg)}
   /* On column main-axis, flex-basis becomes height — reset to auto so inputs keep their 46px height */
   .qa-form-row input[type="text"],
   .qa-form-row input[type="email"],
+  .qa-form-row input[type="tel"],
   .qa-form-row .qa-btn{flex:0 0 auto;width:100%;height:46px}
   .qa-form-row .qa-btn{justify-content:center}
 }
@@ -1057,7 +1061,8 @@ footer{padding:80px 0 36px;background:var(--bg)}
 }
 .is-hero .qa-form textarea,
 .is-hero .qa-form input[type="text"],
-.is-hero .qa-form input[type="email"]{
+.is-hero .qa-form input[type="email"],
+.is-hero .qa-form input[type="tel"]{
   background:rgba(10,10,15,.92);
   color:var(--ink);
   border:1px solid rgba(10,10,15,.85);

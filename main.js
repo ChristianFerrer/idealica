@@ -97,37 +97,38 @@
   });
 
   // ───────────────────────────────────────────────────────
-  // Message form — opens user's mail client with pre-filled body.
-  // TODO: replace with a Formspree / Resend / Vercel function call
-  // for inline submission without leaving the page.
+  // Message form — sends the message to Idealica via WhatsApp.
+  // Opens wa.me/<IDEALICA_WHATSAPP> with the user's name, phone and
+  // message pre-typed so they only need to hit Send.
   // ───────────────────────────────────────────────────────
+  // TODO: replace 34000000000 with the real Idealica WhatsApp number
+  //       (must match the one in the nav 'Hablemos' CTA).
+  const IDEALICA_WHATSAPP = '34000000000';
   const msgForm = $('[data-msg-form]');
   if (msgForm) {
     msgForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const msgEl = $('[name="message"]', msgForm);
       const nameEl = $('[name="name"]', msgForm);
-      const emailEl = $('[name="email"]', msgForm);
+      const phoneEl = $('[name="phone"]', msgForm);
       const msg = (msgEl?.value || '').trim();
       const name = (nameEl?.value || '').trim();
-      const email = (emailEl?.value || '').trim();
-      const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
-      if (!msg || !name || !emailOk) {
+      const phone = (phoneEl?.value || '').trim();
+      const phoneOk = phone.replace(/\D/g, '').length >= 7;
+      if (!msg || !name || !phoneOk) {
         if (!msg) msgEl?.focus();
         else if (!name) nameEl?.focus();
-        else emailEl?.focus();
+        else phoneEl?.focus();
         return;
       }
-      const subject = document.documentElement.lang === 'en'
-        ? 'Tell us · Idealica'
-        : 'Cuéntanoslo · Idealica';
-      const body = msg + '\n\n— ' + name + '\n  ' + email;
-      const url = 'mailto:hola@idealica.com'
-        + '?subject=' + encodeURIComponent(subject)
-        + '&body=' + encodeURIComponent(body);
+      const greeting = document.documentElement.lang === 'en'
+        ? `Hi Idealica, I'm ${name} (${phone}).\n\n${msg}`
+        : `Hola Idealica, soy ${name} (${phone}).\n\n${msg}`;
+      const url = 'https://wa.me/' + IDEALICA_WHATSAPP
+        + '?text=' + encodeURIComponent(greeting);
       const success = $('.qa-form-success', msgForm);
       if (success) success.hidden = false;
-      window.location.href = url;
+      window.open(url, '_blank', 'noopener');
     });
   }
 })();
