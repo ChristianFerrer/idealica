@@ -4,22 +4,25 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>
-/* Auto-redirect to / (ES) if device language is Spanish.
-   Respects user choice (localStorage) and ?lang= override. */
+/* Auto-redirect based on device language, respects manual choice. */
 (function(){
   try{
     if(new URL(location.href).searchParams.has('lang')) return;
     if(localStorage.getItem('idealica-lang')) return;
     var lang=(navigator.language||'en').slice(0,2).toLowerCase();
-    if(lang==='es') location.replace('/');
+    var supported={es:'/',en:'/en.html',de:'/de.html',fr:'/fr.html'};
+    if(supported[lang] && lang!=='en'){ location.replace(supported[lang]); }
   }catch(e){}
 })();
 </script>
 <title>Idealica — Digital studio in Barcelona</title>
 <meta name="description" content="Tell us what's keeping you up. Digital studio from Barcelona. Fast reply, no strings." />
 <link rel="canonical" href="https://idealica.vercel.app/en.html" />
-<link rel="alternate" hreflang="es" href="https://idealica.vercel.app/" />
-<link rel="alternate" hreflang="en" href="https://idealica.vercel.app/en.html" />
+<link rel="alternate" hreflang="es"        href="https://idealica.vercel.app/" />
+<link rel="alternate" hreflang="en"        href="https://idealica.vercel.app/en.html" />
+<link rel="alternate" hreflang="de"        href="https://idealica.vercel.app/de.html" />
+<link rel="alternate" hreflang="de-AT"     href="https://idealica.vercel.app/de.html" />
+<link rel="alternate" hreflang="fr"        href="https://idealica.vercel.app/fr.html" />
 <link rel="alternate" hreflang="x-default" href="https://idealica.vercel.app/" />
 
 <!-- Open Graph -->
@@ -64,7 +67,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=5" />
+<link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body class="page-min">
 
@@ -73,7 +76,11 @@
 <nav class="nav">
   <div class="nav-inner">
     <a class="brand" href="#"><span class="star"></span>Idealica</a>
-    <a class="lang-switch" href="/" hreflang="es" aria-label="Ver en español">ES</a>
+    <div class="lang-switch-group" role="group" aria-label="Language">
+      <a class="lang-switch" href="/"        hreflang="es" aria-label="Ver en español">ES</a>
+      <a class="lang-switch" href="/de.html" hreflang="de" aria-label="Auf Deutsch ansehen">DE</a>
+      <a class="lang-switch" href="/fr.html" hreflang="fr" aria-label="Voir en français">FR</a>
+    </div>
   </div>
 </nav>
 

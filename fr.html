@@ -1,24 +1,24 @@
 <!doctype html>
-<html lang="es">
+<html lang="fr">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>
-/* Auto-redirect según idioma del dispositivo, respeta elección manual. */
+/* Redirection automatique selon la langue du navigateur, respecte le choix utilisateur. */
 (function(){
   try{
     if(new URL(location.href).searchParams.has('lang')) return;
     if(localStorage.getItem('idealica-lang')) return;
-    var lang=(navigator.language||'es').slice(0,2).toLowerCase();
+    var lang=(navigator.language||'fr').slice(0,2).toLowerCase();
     var supported={es:'/',en:'/en.html',de:'/de.html',fr:'/fr.html'};
-    if(supported[lang] && lang!=='es'){ location.replace(supported[lang]); return; }
+    if(supported[lang] && lang!=='fr'){ location.replace(supported[lang]); return; }
     if(!supported[lang]){ location.replace('/en.html'); }
   }catch(e){}
 })();
 </script>
-<title>Idealica — Estudio digital en Barcelona</title>
-<meta name="description" content="Cuéntanos qué te quita el sueño. Estudio digital en Barcelona. Respuesta rápida, sin compromiso." />
-<link rel="canonical" href="https://idealica.vercel.app/" />
+<title>Idealica — Studio digital à Barcelone</title>
+<meta name="description" content="Dis-nous ce qui t'empêche de dormir. Studio digital depuis Barcelone. Réponse rapide, sans engagement." />
+<link rel="canonical" href="https://idealica.vercel.app/fr.html" />
 <link rel="alternate" hreflang="es"        href="https://idealica.vercel.app/" />
 <link rel="alternate" hreflang="en"        href="https://idealica.vercel.app/en.html" />
 <link rel="alternate" hreflang="de"        href="https://idealica.vercel.app/de.html" />
@@ -26,22 +26,19 @@
 <link rel="alternate" hreflang="fr"        href="https://idealica.vercel.app/fr.html" />
 <link rel="alternate" hreflang="x-default" href="https://idealica.vercel.app/" />
 
-<!-- Open Graph -->
-<meta property="og:title" content="Idealica — Estudio digital en Barcelona" />
-<meta property="og:description" content="Cuéntanos qué te quita el sueño. Respuesta rápida, sin compromiso." />
-<meta property="og:url" content="https://idealica.vercel.app/" />
+<meta property="og:title" content="Idealica — Studio digital à Barcelone" />
+<meta property="og:description" content="Dis-nous ce qui t'empêche de dormir. Réponse rapide, sans engagement." />
+<meta property="og:url" content="https://idealica.vercel.app/fr.html" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://idealica.vercel.app/og.svg" />
-<meta property="og:locale" content="es_ES" />
+<meta property="og:locale" content="fr_FR" />
 <meta property="og:site_name" content="Idealica" />
 
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Idealica — Estudio digital en Barcelona" />
-<meta name="twitter:description" content="Cuéntanos qué te quita el sueño. Respuesta rápida, sin compromiso." />
+<meta name="twitter:title" content="Idealica — Studio digital à Barcelone" />
+<meta name="twitter:description" content="Dis-nous ce qui t'empêche de dormir." />
 <meta name="twitter:image" content="https://idealica.vercel.app/og.svg" />
 
-<!-- Structured data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -51,7 +48,7 @@
   "email": "hola@idealica.com",
   "logo": "https://idealica.vercel.app/og.svg",
   "image": "https://idealica.vercel.app/og.svg",
-  "description": "Estudio digital. Webs, IA y automatización para PYMEs en 2–3 semanas, con precio cerrado.",
+  "description": "Studio digital. Web, IA et automatisation pour PME en 2 à 3 semaines, prix fixe.",
   "priceRange": "€€€",
   "address": {
     "@type": "PostalAddress",
@@ -60,7 +57,7 @@
     "addressRegion": "Catalunya",
     "addressCountry": "ES"
   },
-  "areaServed": ["ES", "EU", "Remote"],
+  "areaServed": ["ES", "FR", "EU", "Remote"],
   "openingHours": "Mo-Fr 09:00-18:00"
 }
 </script>
@@ -72,60 +69,59 @@
 </head>
 <body class="page-min">
 
-<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<a class="skip-link" href="#contenido">Aller au contenu</a>
 
 <nav class="nav">
   <div class="nav-inner">
     <a class="brand" href="#"><span class="star"></span>Idealica</a>
-    <div class="lang-switch-group" role="group" aria-label="Idioma">
+    <div class="lang-switch-group" role="group" aria-label="Choisir la langue">
+      <a class="lang-switch" href="/"        hreflang="es" aria-label="Ver en español">ES</a>
       <a class="lang-switch" href="/en.html" hreflang="en" aria-label="Switch to English">EN</a>
       <a class="lang-switch" href="/de.html" hreflang="de" aria-label="Auf Deutsch ansehen">DE</a>
-      <a class="lang-switch" href="/fr.html" hreflang="fr" aria-label="Voir en français">FR</a>
     </div>
   </div>
 </nav>
 
 <main id="contenido" tabindex="-1">
 
-  <!-- ========= BRIGHT HERO (full viewport, the only thing you need to see) ========= -->
   <section class="final is-hero">
     <div class="final-card">
       <div class="final-inner">
         <div class="hero-stack" data-hero-stack>
           <div class="hero-view form-view" data-view="form">
             <h1>
-              Cuéntanos qué<br/>
-              te <span class="serif">quita el sueño</span>.
+              Dis-nous ce qui<br/>
+              <span class="serif">t'empêche de dormir</span>.
             </h1>
-            <p>Construimos contigo, no para ti. Un estudio digital que diseña, programa y automatiza. La IA, donde sirve a tu negocio. Nosotros, en todo lo demás.</p>
+            <p>On construit avec toi, pas pour toi. Un studio digital qui conçoit, code et automatise. L'IA, là où elle sert ton business. Nous, sur tout le reste.</p>
             <form class="qa-form hero-form" id="form-cuentanoslo" data-msg-form novalidate>
-              <label class="visually-hidden" for="msg-text">Tu mensaje</label>
-              <textarea id="msg-text" name="message" rows="5" placeholder="Cuéntanoslo aquí. Sin filtros." required></textarea>
+              <label class="visually-hidden" for="msg-text">Ton message</label>
+              <textarea id="msg-text" name="message" rows="5" placeholder="Raconte-nous ici. Sans filtres." required></textarea>
               <div class="qa-form-row">
-                <label class="visually-hidden" for="msg-name">Tu nombre</label>
-                <input id="msg-name" name="name" type="text" placeholder="Tu nombre" required autocomplete="name" />
-                <label class="visually-hidden" for="msg-phone">Tu WhatsApp</label>
-                <input id="msg-phone" name="phone" type="tel" placeholder="Tu WhatsApp (+34 600 000 000)" required autocomplete="tel" inputmode="tel" />
-                <button type="submit" class="btn btn-primary qa-btn">Enviar<span class="arr">→</span></button>
+                <label class="visually-hidden" for="msg-name">Ton prénom</label>
+                <input id="msg-name" name="name" type="text" placeholder="Ton prénom" required autocomplete="name" />
+                <label class="visually-hidden" for="msg-phone">Ton WhatsApp</label>
+                <input id="msg-phone" name="phone" type="tel" placeholder="Ton WhatsApp (+33 6 00 00 00 00)" required autocomplete="tel" inputmode="tel" />
+                <button type="submit" class="btn btn-primary qa-btn">Envoyer<span class="arr">→</span></button>
               </div>
               <p class="qa-form-success" hidden role="status" aria-live="polite"></p>
             </form>
             <div class="final-meta">
-              <span>↘ 1 click</span>
-              <span>↘ sin formulario</span>
-              <span>↘ respuesta rápida</span>
-              <span>↘ sin compromiso</span>
+              <span>↘ 1 clic</span>
+              <span>↘ sans formulaire</span>
+              <span>↘ réponse rapide</span>
+              <span>↘ sans engagement</span>
             </div>
           </div>
 
           <div class="hero-view success-view" data-view="success" aria-hidden="true">
             <h1 class="success-h1">
-              <span class="success-bang">¡Recibido!</span><br/>
-              Estamos en ello.<br/>
-              Te contactaremos por <span class="serif">WhatsApp</span>.
+              <span class="success-bang">Reçu !</span><br/>
+              On s'en occupe.<br/>
+              On te recontacte par <span class="serif">WhatsApp</span>.
             </h1>
             <button type="button" class="btn btn-primary success-btn" data-reset-form>
-              Enviar otro problema o idea<span class="arr">→</span>
+              Envoyer un autre problème ou idée<span class="arr">→</span>
             </button>
           </div>
         </div>
@@ -133,38 +129,37 @@
     </div>
   </section>
 
-  <!-- ========= 3 DOLORES (dark, opcional para quien scrollee) ========= -->
   <section class="qa" id="dolores">
     <div class="container">
       <div class="qa-head">
-        <span class="qa-eyebrow">Si esto te suena</span>
-        <h2 class="qa-title">Probablemente es lo que <span class="serif">te quita el sueño</span>.</h2>
+        <span class="qa-eyebrow">Si ça te parle</span>
+        <h2 class="qa-title">C'est probablement ce qui <span class="serif">t'empêche de dormir</span>.</h2>
       </div>
 
       <div class="pains-grid">
         <div class="pain c1">
           <div class="pain-num">01</div>
-          <h3>Tienes web y redes, pero los clientes <span class="serif">no aparecen</span>.</h3>
-          <p>Posts que se pierden, web sin tráfico, leads por casualidad. Posicionarse no es publicar — es aparecer donde te buscan.</p>
+          <h3>Tu as un site et des réseaux, mais les clients <span class="serif">n'arrivent pas</span>.</h3>
+          <p>Des posts qui se perdent, un site sans trafic, des leads par hasard. Se positionner, ce n'est pas publier — c'est être là où on te cherche.</p>
           <span class="arrow-bg" aria-hidden="true">↗</span>
         </div>
         <div class="pain c2">
           <div class="pain-num">02</div>
-          <h3>Has oído mil veces lo de la <span class="serif">IA</span> pero nadie te lo explica.</h3>
-          <p>Sabes que algo hay ahí. Pero entre el hype, los gurús de LinkedIn y las consultoras grandes, sigues igual que hace un año.</p>
+          <h3>Tu as entendu mille fois parler d'<span class="serif">IA</span> mais personne ne te l'explique.</h3>
+          <p>Tu sens qu'il y a quelque chose là. Mais entre le hype, les gourous LinkedIn et les grands cabinets, tu en es au même point qu'il y a un an.</p>
           <span class="arrow-bg" aria-hidden="true">↗</span>
         </div>
         <div class="pain c3">
           <div class="pain-num">03</div>
-          <h3>Tu equipo <span class="serif">pierde horas</span> en tareas repetitivas.</h3>
-          <p>Copiar datos entre apps, mandar el mismo mail, generar el mismo informe. Tu equipo merece pensar, no fotocopiar.</p>
+          <h3>Ton équipe <span class="serif">perd des heures</span> sur des tâches répétitives.</h3>
+          <p>Copier des données entre apps, envoyer le même mail, générer le même rapport. Ton équipe mérite de penser, pas de photocopier.</p>
           <span class="arrow-bg" aria-hidden="true">↗</span>
         </div>
       </div>
 
       <div class="qa-foot">
-        <a href="#form-cuentanoslo" class="btn btn-primary qa-btn">↑ Cuéntanoslo<span class="arr">→</span></a>
-        <span class="qa-note">hablemos directamente por WhatsApp y sin complicaciones</span>
+        <a href="#form-cuentanoslo" class="btn btn-primary qa-btn">↑ Raconte-nous<span class="arr">→</span></a>
+        <span class="qa-note">parlons directement sur WhatsApp, sans détour</span>
       </div>
     </div>
   </section>
@@ -176,24 +171,24 @@
     <div class="footer-min">
       <div class="footer-brand-block">
         <div class="foot-brand"><span class="star"></span>Idealica</div>
-        <p class="foot-tag">Estudio digital. Pequeño a propósito. Hecho a mano desde Barcelona.</p>
+        <p class="foot-tag">Studio digital. Volontairement petit. Fait main depuis Barcelone.</p>
       </div>
     </div>
     <div class="foot-bot">
       <span>© 2026 Idealica</span>
       <span>v3 · minimal</span>
-      <span><a href="#" style="color:inherit">Aviso legal</a> · <a href="#" style="color:inherit">Privacidad</a></span>
+      <span><a href="#" style="color:inherit">Mentions légales</a> · <a href="#" style="color:inherit">Confidentialité</a></span>
     </div>
   </div>
 </footer>
 
 <div class="cookie-banner" data-cookie-banner role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-desc" hidden>
   <div class="cookie-inner">
-    <p id="cookie-title" class="cookie-title">Usamos analíticas básicas</p>
-    <p id="cookie-desc" class="cookie-desc">Vercel Analytics, sin cookies de terceros. Solo para entender qué páginas se ven y desde dónde. <a href="#" data-cookie-more>Más info</a></p>
+    <p id="cookie-title" class="cookie-title">Nous utilisons une analytique basique</p>
+    <p id="cookie-desc" class="cookie-desc">Vercel Analytics, sans cookies tiers. Juste pour comprendre quelles pages sont vues et depuis où. <a href="#" data-cookie-more>Plus d'info</a></p>
     <div class="cookie-actions">
-      <button type="button" class="btn-cookie ghost" data-cookie-reject>Rechazar</button>
-      <button type="button" class="btn-cookie primary" data-cookie-accept>Aceptar</button>
+      <button type="button" class="btn-cookie ghost" data-cookie-reject>Refuser</button>
+      <button type="button" class="btn-cookie primary" data-cookie-accept>Accepter</button>
     </div>
   </div>
 </div>
