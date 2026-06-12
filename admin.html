@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=3" />
+<link rel="stylesheet" href="admin.css?v=4" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -208,34 +208,39 @@ function render(){
   }
   emptyEl.hidden = true;
 
+  const truncate = (s, n) => (s && s.length > n) ? s.slice(0, n - 1).trimEnd() + '…' : (s || '');
+
   const html = filtered.map(l => `
     <article class="lead" data-id="${l.id}" data-estado="${l.estado}">
-      <header class="lead-head">
-        <div class="lead-meta">
-          <span class="lead-date">${relativeTime(l.created_at)}</span>
-          <span class="lead-status status-${l.estado}">${STATUS_LABEL[l.estado] || l.estado}</span>
+      <button type="button" class="lead-row" data-toggle aria-expanded="false" aria-controls="lead-body-${l.id}">
+        <span class="lead-status-pill status-${l.estado}">${STATUS_LABEL[l.estado] || l.estado}</span>
+        <span class="lead-date">${relativeTime(l.created_at)}</span>
+        <span class="lead-name">${escapeHtml(l.nombre)}</span>
+        <span class="lead-phone-inline">${escapeHtml(l.whatsapp)}</span>
+        <span class="lead-msg-preview">${escapeHtml(truncate(l.mensaje, 90))}</span>
+        <span class="lead-chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="lead-body" id="lead-body-${l.id}" hidden>
+        <a class="lead-wa" href="${waLink(l.whatsapp)}" target="_blank" rel="noopener">
+          ${escapeHtml(l.whatsapp)} <span aria-hidden="true">↗ WhatsApp</span>
+        </a>
+        <p class="lead-msg-full">${escapeHtml(l.mensaje)}</p>
+        <div class="lead-edit">
+          <label class="lead-edit-row">
+            <span class="lead-edit-label">Estado</span>
+            <select data-action="estado">
+              <option value="pendiente"${l.estado==='pendiente'?' selected':''}>Pendiente</option>
+              <option value="contactado"${l.estado==='contactado'?' selected':''}>Contactado</option>
+              <option value="cerrado"${l.estado==='cerrado'?' selected':''}>Cerrado</option>
+              <option value="descartado"${l.estado==='descartado'?' selected':''}>Descartado</option>
+            </select>
+          </label>
+          <label class="lead-edit-row">
+            <span class="lead-edit-label">Notas internas</span>
+            <textarea data-action="notas" rows="2" placeholder="Añade notas internas (auto-guarda al salir)…">${escapeHtml(l.notas || '')}</textarea>
+          </label>
         </div>
-        <button type="button" class="lead-delete" data-action="delete" title="Eliminar" aria-label="Eliminar lead">×</button>
-      </header>
-      <h2 class="lead-name">${escapeHtml(l.nombre)}</h2>
-      <a class="lead-wa" href="${waLink(l.whatsapp)}" target="_blank" rel="noopener">
-        ${escapeHtml(l.whatsapp)} <span aria-hidden="true">↗ WhatsApp</span>
-      </a>
-      <p class="lead-msg">${escapeHtml(l.mensaje)}</p>
-      <div class="lead-edit">
-        <label class="lead-edit-row">
-          <span class="lead-edit-label">Estado</span>
-          <select data-action="estado">
-            <option value="pendiente"${l.estado==='pendiente'?' selected':''}>Pendiente</option>
-            <option value="contactado"${l.estado==='contactado'?' selected':''}>Contactado</option>
-            <option value="cerrado"${l.estado==='cerrado'?' selected':''}>Cerrado</option>
-            <option value="descartado"${l.estado==='descartado'?' selected':''}>Descartado</option>
-          </select>
-        </label>
-        <label class="lead-edit-row">
-          <span class="lead-edit-label">Notas internas</span>
-          <textarea data-action="notas" rows="2" placeholder="Añade notas internas (auto-guarda al salir)…">${escapeHtml(l.notas || '')}</textarea>
-        </label>
+        <button type="button" class="lead-delete" data-action="delete">Eliminar lead</button>
       </div>
     </article>
   `).join('');
@@ -246,6 +251,16 @@ function render(){
   // Wire actions
   $$('.lead', leadsBox).forEach(el => {
     const id = el.dataset.id;
+
+    // Click anywhere on the row toggles the expanded body
+    const row  = el.querySelector('[data-toggle]');
+    const body = el.querySelector('.lead-body');
+    row.addEventListener('click', () => {
+      const open = row.getAttribute('aria-expanded') === 'true';
+      row.setAttribute('aria-expanded', String(!open));
+      body.hidden = open;
+    });
+
     el.querySelector('[data-action="estado"]').addEventListener('change', async (e) => {
       const estado = e.target.value;
       const { error } = await supabase.from('leads').update({ estado }).eq('id', id);
