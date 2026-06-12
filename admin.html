@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=2" />
+<link rel="stylesheet" href="admin.css?v=3" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -44,6 +44,12 @@
     </div>
   </header>
 
+  <nav class="admin-tabs" role="tablist">
+    <button type="button" class="tab-btn active" data-tab="leads" role="tab">Leads</button>
+    <button type="button" class="tab-btn" data-tab="team" role="tab">Equipo</button>
+  </nav>
+
+  <section class="admin-section" data-section="leads">
   <section class="admin-stats">
     <button type="button" class="stat" data-stat="pendiente">
       <span class="stat-num" data-count="pendiente">0</span>
@@ -75,6 +81,22 @@
     <p class="admin-empty" data-empty hidden>Sin leads en esta vista.</p>
     <p class="admin-loading" data-loading>Cargando leads…</p>
   </main>
+  </section>
+
+  <section class="admin-section" data-section="team" hidden>
+    <header class="team-head">
+      <div>
+        <h2 class="team-title">Equipo</h2>
+        <p class="team-note">Quién recibe alertas cuando entra un lead nuevo, y por qué canal. Cada miembro configura sus credenciales aquí.</p>
+      </div>
+      <p class="team-add-hint" data-admin-only hidden>
+        Para añadir miembros nuevos: <a href="https://supabase.com/dashboard/project/tbcfglgabinazoekhcnt/auth/users" target="_blank" rel="noopener">Supabase Auth → Add user</a>. Aparecerán aquí automáticamente al primer login.
+      </p>
+    </header>
+    <div class="team-grid" data-team-grid>
+      <p class="admin-loading" data-team-loading>Cargando equipo…</p>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -122,6 +144,7 @@ function showApp(session){
   appView.hidden   = false;
   userEmailEl.textContent = session.user.email;
   loadLeads();
+  ensureCurrentUser();
 }
 
 async function loadLeads(){
@@ -321,6 +344,197 @@ else showLogin();
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT' || !session) showLogin();
 });
+
+// ─────────────────────────────────────────────────────────────
+// TEAM management
+// ─────────────────────────────────────────────────────────────
+let currentUser = null;
+let teamMembers = [];
+let teamLoaded  = false;
+
+function escapeAttr(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function ensureCurrentUser(){
+  const sess = (await supabase.auth.getSession()).data.session;
+  if (!sess) { currentUser = null; return null; }
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', sess.user.id)
+    .maybeSingle();
+  if (error) { console.error('[CRM] load self failed', error); return null; }
+  currentUser = data;
+  $$('[data-admin-only]').forEach(el => { el.hidden = (currentUser?.role !== 'admin'); });
+  return currentUser;
+}
+
+async function loadTeam(){
+  if (!currentUser) await ensureCurrentUser();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('role', { ascending: true })
+    .order('email', { ascending: true });
+  if (error) { console.error('[CRM] load team failed', error); alert('No se pudo cargar el equipo: ' + error.message); return; }
+  teamMembers = data || [];
+  teamLoaded  = true;
+  renderTeam();
+}
+
+function renderTeam(){
+  const grid    = $('[data-team-grid]');
+  const loading = $('[data-team-loading]');
+  if (loading) loading.hidden = true;
+  $$('.member-card', grid).forEach(el => el.remove());
+
+  const amIAdmin = currentUser?.role === 'admin';
+  const myId     = currentUser?.id;
+
+  const html = teamMembers.map(m => {
+    const isSelf     = m.id === myId;
+    const canEdit    = isSelf || amIAdmin;
+    const canTarget  = amIAdmin && !isSelf;
+    const initial    = (m.nombre || m.email || '?').charAt(0).toUpperCase();
+
+    const editableHTML = canEdit ? `
+      <div class="member-channels">
+        <label class="ch-toggle"><input type="checkbox" data-pref="notify_email" ${m.notify_email?'checked':''}><span>📧 Email</span></label>
+        <label class="ch-toggle"><input type="checkbox" data-pref="notify_whatsapp" ${m.notify_whatsapp?'checked':''}><span>💬 WhatsApp</span></label>
+        <label class="ch-toggle"><input type="checkbox" data-pref="notify_push" ${m.notify_push?'checked':''}><span>🔔 Push</span></label>
+      </div>
+      <details class="member-config">
+        <summary>Datos y credenciales</summary>
+        <div class="config-fields">
+          <label>
+            <span>Nombre <em class="hint">(cómo aparecer en el CRM)</em></span>
+            <input type="text" data-field="nombre" value="${escapeAttr(m.nombre || '')}" placeholder="Tu nombre">
+          </label>
+          <label>
+            <span>WhatsApp personal <em class="hint">(opcional, para mostrar)</em></span>
+            <input type="tel" data-field="whatsapp" value="${escapeAttr(m.whatsapp || '')}" placeholder="+34 600 000 000">
+          </label>
+          <label>
+            <span>CallMeBot phone <em class="hint">(país + número, sin +)</em></span>
+            <input type="text" data-field="callmebot_phone" value="${escapeAttr(m.callmebot_phone || '')}" placeholder="34600000000">
+          </label>
+          <label>
+            <span>CallMeBot API key</span>
+            <input type="text" data-field="callmebot_key" value="${escapeAttr(m.callmebot_key || '')}" placeholder="123456">
+          </label>
+          <label>
+            <span>ntfy.sh topic <em class="hint">(el de tu app ntfy)</em></span>
+            <input type="text" data-field="push_topic" value="${escapeAttr(m.push_topic || '')}" placeholder="idealica-leads-xK9p2m">
+          </label>
+        </div>
+      </details>
+    ` : `
+      <div class="member-channels member-channels-ro">
+        <span class="ch-badge ${m.notify_email?'on':'off'}">📧 ${m.notify_email?'Email':'—'}</span>
+        <span class="ch-badge ${m.notify_whatsapp?'on':'off'}">💬 ${m.notify_whatsapp?'WhatsApp':'—'}</span>
+        <span class="ch-badge ${m.notify_push?'on':'off'}">🔔 ${m.notify_push?'Push':'—'}</span>
+      </div>
+    `;
+
+    const adminHTML = canTarget ? `
+      <div class="member-admin-actions">
+        <label class="role-pick">
+          <span>Rol</span>
+          <select data-field="role">
+            <option value="member" ${m.role==='member'?'selected':''}>Member</option>
+            <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
+          </select>
+        </label>
+        <button type="button" class="member-delete" data-action="delete">Quitar acceso al CRM</button>
+      </div>
+    ` : '';
+
+    return `
+      <article class="member-card" data-member-id="${m.id}" data-is-self="${isSelf}">
+        <header class="member-head">
+          <div class="member-avatar">${escapeHtml(initial)}</div>
+          <div class="member-id">
+            <h3 class="member-name">${escapeHtml(m.nombre || m.email.split('@')[0])}${isSelf?' <span class="member-self">(tú)</span>':''}</h3>
+            <p class="member-email">${escapeHtml(m.email)}</p>
+          </div>
+          <span class="member-role role-${m.role}">${m.role === 'admin' ? 'Admin' : 'Member'}</span>
+        </header>
+        ${editableHTML}
+        ${adminHTML}
+      </article>
+    `;
+  }).join('');
+
+  loading.insertAdjacentHTML('beforebegin', html);
+
+  // Wire per-card actions
+  $$('.member-card', grid).forEach(card => {
+    const id = card.dataset.memberId;
+    const member = teamMembers.find(m => m.id === id);
+    if (!member) return;
+
+    $$('[data-pref]', card).forEach(input => {
+      input.addEventListener('change', async () => {
+        const field = input.dataset.pref;
+        const value = input.checked;
+        const { error } = await supabase.from('profiles').update({ [field]: value }).eq('id', id);
+        if (error) { alert('Error: ' + error.message); input.checked = !value; }
+        else { member[field] = value; }
+      });
+    });
+
+    $$('[data-field]', card).forEach(input => {
+      input.addEventListener('change', async () => {
+        const field = input.dataset.field;
+        const raw   = (input.value || '').trim();
+        const value = raw === '' ? null : raw;
+        if (member[field] === value) return;
+        const { error } = await supabase.from('profiles').update({ [field]: value }).eq('id', id);
+        if (error) {
+          alert('Error: ' + error.message);
+          input.value = member[field] || '';
+          return;
+        }
+        member[field] = value;
+        if (field === 'role' || field === 'nombre') renderTeam();
+      });
+    });
+
+    const delBtn = card.querySelector('[data-action="delete"]');
+    if (delBtn) {
+      delBtn.addEventListener('click', async () => {
+        const ok = confirm(
+          'Quitar acceso de ' + member.email + ' al CRM?\n\n' +
+          'Esto borra su PERFIL del CRM (no podrá iniciar sesión ni recibirá notificaciones).\n' +
+          'El usuario de Supabase Auth permanece — para borrarlo del todo, hazlo en Dashboard → Authentication → Users.'
+        );
+        if (!ok) return;
+        const { error } = await supabase.from('profiles').delete().eq('id', id);
+        if (error) { alert('Error: ' + error.message); return; }
+        teamMembers = teamMembers.filter(x => x.id !== id);
+        renderTeam();
+      });
+    }
+  });
+}
+
+// Tab switching
+$$('[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    $$('[data-tab]').forEach(b => b.classList.toggle('active', b === btn));
+    $$('[data-section]').forEach(s => { s.hidden = (s.dataset.section !== tab); });
+    if (tab === 'team' && !teamLoaded) loadTeam();
+  });
+});
+
+// Realtime: when profiles change anywhere, refresh the team grid
+supabase
+  .channel('profiles-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+    if (teamLoaded) loadTeam();
+  })
+  .subscribe();
+
 })();
 </script>
 

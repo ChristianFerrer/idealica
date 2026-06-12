@@ -333,3 +333,216 @@ button{font-family:inherit;cursor:pointer}
     transition:none !important;
   }
 }
+
+/* ============================================================
+   v2 — Tabs (Leads · Equipo) and Team management view
+   ============================================================ */
+.admin-tabs{
+  display:flex;gap:6px;margin:18px 0 14px;padding:6px;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:14px;
+  width:fit-content;
+}
+.tab-btn{
+  background:transparent;border:0;color:var(--ink-2);
+  font-family:inherit;font-size:14px;font-weight:500;letter-spacing:-0.01em;
+  padding:9px 18px;border-radius:10px;transition:.18s;
+}
+.tab-btn:hover{background:var(--bg-3);color:var(--ink)}
+.tab-btn.active{background:var(--bg-4);color:var(--ink)}
+
+.admin-section{display:block}
+.admin-section[hidden]{display:none}
+
+/* ---- Team header ---- */
+.team-head{
+  display:flex;justify-content:space-between;gap:32px;align-items:flex-end;flex-wrap:wrap;
+  margin:8px 0 24px;
+}
+.team-title{
+  font-size:28px;font-weight:600;letter-spacing:-0.02em;
+  color:var(--ink);margin:0 0 4px;
+}
+.team-note{
+  margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.5;max-width:55ch;
+}
+.team-add-hint{
+  margin:0;padding:14px 16px;
+  background:rgba(212,255,58,.08);border:1px solid rgba(212,255,58,.25);
+  border-radius:12px;
+  font-size:13px;color:var(--ink-2);line-height:1.45;max-width:42ch;
+}
+.team-add-hint a{color:var(--lime);border-bottom:1px solid var(--lime);font-weight:500}
+
+/* ---- Team grid + member card ---- */
+.team-grid{
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(360px, 1fr));gap:14px;
+}
+.member-card{
+  background:var(--bg-2);border:1px solid var(--line);border-radius:18px;
+  padding:20px 22px;
+  display:flex;flex-direction:column;gap:14px;
+  transition:border-color .2s ease;
+}
+.member-card:hover{border-color:var(--line-2)}
+.member-card[data-is-self="true"]{border-color:rgba(212,255,58,.35)}
+
+.member-head{
+  display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+}
+.member-avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg, var(--lime), var(--cobalt));
+  color:var(--bg);font-weight:700;font-size:18px;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.member-id{min-width:0}
+.member-name{
+  font-size:17px;font-weight:600;letter-spacing:-0.01em;
+  margin:0 0 2px;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.member-self{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;
+  color:var(--lime);text-transform:uppercase;font-weight:400;margin-left:4px;
+}
+.member-email{
+  margin:0;color:var(--ink-3);font-size:13px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+.member-role{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 10px;border-radius:999px;border:1px solid var(--line-2);
+  flex-shrink:0;
+}
+.role-admin{color:var(--lime);border-color:rgba(212,255,58,.4)}
+.role-member{color:var(--ink-2);border-color:var(--line-2)}
+
+/* ---- Channel toggles ---- */
+.member-channels{
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.ch-toggle{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;border-radius:999px;
+  background:var(--bg-3);border:1px solid var(--line-2);
+  font-size:13px;color:var(--ink-2);cursor:pointer;
+  transition:.18s;user-select:none;
+}
+.ch-toggle:has(input:checked){
+  background:rgba(212,255,58,.1);
+  border-color:rgba(212,255,58,.5);
+  color:var(--ink);
+}
+.ch-toggle input{
+  appearance:none;-webkit-appearance:none;
+  width:14px;height:14px;border-radius:4px;
+  border:1px solid var(--line-2);background:var(--bg-2);
+  cursor:pointer;position:relative;
+  flex-shrink:0;
+}
+.ch-toggle input:checked{
+  background:var(--lime);border-color:var(--lime);
+}
+.ch-toggle input:checked::after{
+  content:"";position:absolute;left:3px;top:0;
+  width:5px;height:9px;border:solid var(--bg);
+  border-width:0 1.5px 1.5px 0;transform:rotate(45deg);
+}
+.ch-toggle input:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+
+/* Read-only channel badges (for non-self, non-admin views) */
+.member-channels-ro{margin-top:4px}
+.ch-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:999px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;border:1px solid var(--line-2);
+}
+.ch-badge.on { background:rgba(212,255,58,.08); color:var(--lime);   border-color:rgba(212,255,58,.3) }
+.ch-badge.off{ background:var(--bg-3);          color:var(--ink-3); }
+
+/* ---- Member config (details/summary) ---- */
+.member-config{
+  border-top:1px solid var(--line);padding-top:12px;
+}
+.member-config summary{
+  cursor:pointer;list-style:none;
+  font-size:13px;color:var(--ink-2);
+  display:flex;align-items:center;gap:8px;padding:4px 0;
+  user-select:none;transition:color .2s;
+}
+.member-config summary::-webkit-details-marker{display:none}
+.member-config summary::before{
+  content:"";width:14px;height:14px;border-radius:50%;
+  border:1px solid var(--line-2);
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23A8A8B8' stroke-width='1.5' stroke-linecap='round'/></svg>") center/10px no-repeat;
+  transition:transform .2s;flex-shrink:0;
+}
+.member-config[open] summary::before{transform:rotate(180deg)}
+.member-config summary:hover{color:var(--ink)}
+
+.config-fields{
+  display:flex;flex-direction:column;gap:12px;margin-top:14px;
+}
+.config-fields label{display:flex;flex-direction:column;gap:5px}
+.config-fields label > span{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.config-fields label > span em.hint{
+  font-style:normal;text-transform:none;letter-spacing:0;
+  color:var(--ink-3);opacity:.75;font-size:11px;margin-left:6px;
+}
+.config-fields input{
+  background:var(--bg-3);color:var(--ink);
+  border:1px solid var(--line-2);border-radius:10px;
+  padding:0 14px;height:38px;line-height:38px;
+  font-family:inherit;font-size:14px;
+  -webkit-appearance:none;appearance:none;
+}
+.config-fields input:focus{
+  outline:none;border-color:var(--lime);background:var(--bg-4);
+  box-shadow:0 0 0 3px rgba(212,255,58,.18);
+}
+
+/* ---- Admin actions on other members ---- */
+.member-admin-actions{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  border-top:1px solid var(--line);padding-top:12px;flex-wrap:wrap;
+}
+.role-pick{
+  display:flex;align-items:center;gap:10px;
+}
+.role-pick > span{
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.role-pick select{
+  background:var(--bg-3);color:var(--ink);
+  border:1px solid var(--line-2);border-radius:10px;
+  height:34px;padding:0 30px 0 12px;font-size:13px;font-family:inherit;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23A8A8B8' stroke-width='1.5' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.role-pick select:focus{outline:none;border-color:var(--lime);background-color:var(--bg-4)}
+.member-delete{
+  background:transparent;color:var(--magenta);
+  border:1px solid rgba(255,61,127,.3);border-radius:999px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;font-weight:600;
+  padding:7px 14px;transition:.2s;
+}
+.member-delete:hover{
+  background:rgba(255,61,127,.12);
+  border-color:var(--magenta);color:var(--magenta);
+}
+
+@media (max-width:720px){
+  .team-grid{grid-template-columns:1fr}
+  .member-admin-actions{flex-direction:column;align-items:stretch}
+  .member-admin-actions .role-pick{justify-content:space-between}
+  .member-delete{width:100%}
+}
