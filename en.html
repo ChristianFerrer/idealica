@@ -64,7 +64,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=3" />
+<link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body class="page-min">
 
@@ -84,30 +84,43 @@
   <section class="final is-hero">
     <div class="final-card">
       <div class="final-inner">
-        <h1>
-          Tell us what's<br/>
-          <span class="serif">keeping you up</span>.
-        </h1>
-        <p>We build with you, not for you. A digital studio that designs, codes and automates. AI, where it serves your business. Us, in everything else.</p>
-        <form class="qa-form hero-form" id="form-cuentanoslo" data-msg-form novalidate>
-          <label class="visually-hidden" for="msg-text">Your message</label>
-          <textarea id="msg-text" name="message" rows="5" placeholder="Tell us here. No filters." required></textarea>
-          <div class="qa-form-row">
-            <label class="visually-hidden" for="msg-name">Your name</label>
-            <input id="msg-name" name="name" type="text" placeholder="Your name" required autocomplete="name" />
-            <label class="visually-hidden" for="msg-phone">Your WhatsApp</label>
-            <input id="msg-phone" name="phone" type="tel" placeholder="Your WhatsApp (+34 600 000 000)" required autocomplete="tel" inputmode="tel" />
-            <button type="submit" class="btn btn-primary qa-btn">Send<span class="arr">→</span></button>
+        <div class="hero-stack" data-hero-stack>
+          <div class="hero-view form-view" data-view="form">
+            <h1>
+              Tell us what's<br/>
+              <span class="serif">keeping you up</span>.
+            </h1>
+            <p>We build with you, not for you. A digital studio that designs, codes and automates. AI, where it serves your business. Us, in everything else.</p>
+            <form class="qa-form hero-form" id="form-cuentanoslo" data-msg-form novalidate>
+              <label class="visually-hidden" for="msg-text">Your message</label>
+              <textarea id="msg-text" name="message" rows="5" placeholder="Tell us here. No filters." required></textarea>
+              <div class="qa-form-row">
+                <label class="visually-hidden" for="msg-name">Your name</label>
+                <input id="msg-name" name="name" type="text" placeholder="Your name" required autocomplete="name" />
+                <label class="visually-hidden" for="msg-phone">Your WhatsApp</label>
+                <input id="msg-phone" name="phone" type="tel" placeholder="Your WhatsApp (+34 600 000 000)" required autocomplete="tel" inputmode="tel" />
+                <button type="submit" class="btn btn-primary qa-btn">Send<span class="arr">→</span></button>
+              </div>
+              <p class="qa-form-success" hidden role="status" aria-live="polite"></p>
+            </form>
+            <div class="final-meta">
+              <span>↘ 1 click</span>
+              <span>↘ no form</span>
+              <span>↘ fast reply</span>
+              <span>↘ no strings</span>
+            </div>
           </div>
-          <p class="qa-form-success" hidden role="status" aria-live="polite">
-            Got it! We'll WhatsApp you within 24h.
-          </p>
-        </form>
-        <div class="final-meta">
-          <span>↘ 1 click</span>
-          <span>↘ no form</span>
-          <span>↘ fast reply</span>
-          <span>↘ no strings</span>
+
+          <div class="hero-view success-view" data-view="success" aria-hidden="true">
+            <h1 class="success-h1">
+              <span class="success-bang">Got it!</span><br/>
+              We're on it.<br/>
+              We'll <span class="serif">WhatsApp</span> you.
+            </h1>
+            <button type="button" class="btn btn-primary success-btn" data-reset-form>
+              Send another problem or idea<span class="arr">→</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -183,6 +196,6 @@
 </div>
 
 <script defer src="/_vercel/insights/script.js" data-analytics></script>
-<script defer src="main.js?v=2"></script>
+<script defer src="main.js?v=3"></script>
 </body>
 </html>

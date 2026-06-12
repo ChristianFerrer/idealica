@@ -125,7 +125,8 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = document.documentElement.lang === 'en' ? 'Sending...' : 'Enviando...';
       }
-      const success = $('.qa-form-success', msgForm);
+      const errorEl = $('.qa-form-success', msgForm);
+      const heroStack = document.querySelector('[data-hero-stack]');
       try {
         const res = await fetch(SUPABASE_URL + '/rest/v1/leads', {
           method: 'POST',
@@ -138,18 +139,31 @@
           body: JSON.stringify({ nombre: name, whatsapp: phone, mensaje: msg })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        if (success) {
-          success.classList.remove('error');
-          success.hidden = false;
+        // Clean up any prior error message
+        if (errorEl) {
+          errorEl.hidden = true;
+          errorEl.classList.remove('error');
+          errorEl.innerHTML = '';
         }
         msgForm.reset();
+        // Swap the hero from form view to success view
+        if (heroStack) {
+          heroStack.classList.add('is-success');
+          const successView = heroStack.querySelector('.success-view');
+          const formView    = heroStack.querySelector('.form-view');
+          if (successView) successView.setAttribute('aria-hidden', 'false');
+          if (formView)    formView.setAttribute('aria-hidden', 'true');
+          // Move focus to the "send another" button after the transition lands
+          const resetBtn = heroStack.querySelector('[data-reset-form]');
+          if (resetBtn) setTimeout(() => resetBtn.focus({ preventScroll: true }), 550);
+        }
       } catch (err) {
-        if (success) {
-          success.classList.add('error');
-          success.innerHTML = document.documentElement.lang === 'en'
+        if (errorEl) {
+          errorEl.classList.add('error');
+          errorEl.innerHTML = document.documentElement.lang === 'en'
             ? 'Something went wrong. Please write to <a href="mailto:hola@idealica.com">hola@idealica.com</a>.'
             : 'Algo falló. Escríbenos a <a href="mailto:hola@idealica.com">hola@idealica.com</a>.';
-          success.hidden = false;
+          errorEl.hidden = false;
         }
       } finally {
         if (submitBtn) {
@@ -158,5 +172,20 @@
         }
       }
     });
+
+    // "Enviar otro" — swap back to the form view and focus the textarea
+    const resetBtn = document.querySelector('[data-reset-form]');
+    const heroStackForReset = document.querySelector('[data-hero-stack]');
+    if (resetBtn && heroStackForReset) {
+      resetBtn.addEventListener('click', () => {
+        heroStackForReset.classList.remove('is-success');
+        const successView = heroStackForReset.querySelector('.success-view');
+        const formView    = heroStackForReset.querySelector('.form-view');
+        if (successView) successView.setAttribute('aria-hidden', 'true');
+        if (formView)    formView.setAttribute('aria-hidden', 'false');
+        const textarea = heroStackForReset.querySelector('textarea');
+        setTimeout(() => textarea?.focus({ preventScroll: true }), 550);
+      });
+    }
   }
 })();

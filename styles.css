@@ -1118,3 +1118,62 @@ footer{padding:80px 0 36px;background:var(--bg)}
   .final.is-hero .btn-primary,
   .final.is-hero .final-meta{animation:none !important;opacity:1 !important;transform:none !important}
 }
+
+/* ============================================================
+   Hero form/success swap — stacked grid: both views live in the
+   same cell, fade and slide between each other on submit/reset.
+   ============================================================ */
+.hero-stack{display:grid;width:100%}
+.hero-stack > .hero-view{
+  grid-column:1;grid-row:1;
+  transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1);
+  will-change:opacity,transform;
+}
+/* Default: form visible, success waiting below */
+.hero-stack > .success-view{opacity:0;transform:translateY(20px);pointer-events:none}
+/* On submit success: form fades up + out, success fades in */
+.hero-stack.is-success > .form-view{opacity:0;transform:translateY(-20px);pointer-events:none}
+.hero-stack.is-success > .success-view{opacity:1;transform:none;pointer-events:auto}
+
+/* Success view layout */
+.success-view{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:40px;min-height:60vh;
+}
+.success-view h1.success-h1{
+  font-size:clamp(48px,8vw,128px);
+  line-height:.94;letter-spacing:-0.045em;font-weight:500;
+  margin:0;color:var(--bg);text-wrap:balance;max-width:18ch;
+}
+.success-view h1.success-h1 .serif{color:var(--bg)}
+.success-view .success-bang{
+  display:inline-block;transform-origin:left center;
+  animation:success-pop .9s cubic-bezier(.34,1.56,.64,1) .15s both;
+}
+@keyframes success-pop{
+  0%   {opacity:0;transform:translateY(14px) scale(.85) rotate(-3deg)}
+  60%  {opacity:1;transform:translateY(-3px) scale(1.06) rotate(2deg)}
+  100% {opacity:1;transform:translateY(0)    scale(1)    rotate(0)}
+}
+.success-btn{font-size:17px;padding:22px 32px}
+
+/* Stagger the success H1 and button on enter */
+.hero-stack.is-success > .success-view h1.success-h1{
+  animation:hero-rise .65s cubic-bezier(.2,.7,.2,1) .05s both,
+            success-pop 0s both; /* placeholder so success-bang inside still pops */
+}
+.hero-stack.is-success > .success-view .success-h1 .success-bang{
+  animation:success-pop .9s cubic-bezier(.34,1.56,.64,1) .2s both;
+}
+.hero-stack.is-success > .success-view .success-btn{
+  animation:hero-rise .6s cubic-bezier(.2,.7,.2,1) .4s both;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .hero-stack > .hero-view{transition:none !important}
+  .success-view .success-bang,
+  .hero-stack.is-success > .success-view h1.success-h1,
+  .hero-stack.is-success > .success-view .success-btn{
+    animation:none !important;opacity:1 !important;transform:none !important
+  }
+}
