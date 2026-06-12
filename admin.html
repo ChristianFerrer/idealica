@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="admin.css?v=1" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
 
@@ -76,14 +77,19 @@
   </main>
 </div>
 
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
-
+<script>
+(async function(){
+if (!window.supabase || !window.supabase.createClient) {
+  document.body.insertAdjacentHTML('afterbegin',
+    '<p style="position:fixed;top:0;left:0;right:0;padding:14px;background:#FF3D7F;color:#0A0A0F;font:600 14px system-ui;z-index:9999;text-align:center;">No se pudo cargar Supabase JS desde el CDN. Revisa tu conexión o bloqueador.</p>');
+  return;
+}
 const SUPABASE_URL = 'https://tbcfglgabinazoekhcnt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_yWCslyVmWGbmM8bherr6Vw_gHkJ4ohR';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
 });
+console.log('[CRM] Supabase JS loaded, client ready.');
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -264,19 +270,31 @@ $$('.stat').forEach(btn => {
 // Login
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  console.log('[CRM] submit handler fired');
   loginError.hidden = true;
   const email    = loginForm.querySelector('[name="email"]').value;
   const password = loginForm.querySelector('[name="password"]').value;
   const submit   = loginForm.querySelector('button[type="submit"]');
   submit.disabled = true;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  submit.disabled = false;
-  if (error) {
-    loginError.textContent = error.message || 'Error al iniciar sesión.';
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('[CRM] signIn response', { hasSession: !!data?.session, error: error?.message });
+    if (error) {
+      loginError.textContent = error.message || 'Error al iniciar sesión.';
+      loginError.hidden = false;
+    } else if (data?.session) {
+      showApp(data.session);
+    } else {
+      loginError.textContent = 'Login OK pero sin sesión devuelta. Revisa Supabase Auth settings.';
+      loginError.hidden = false;
+    }
+  } catch (err) {
+    console.error('[CRM] signIn threw', err);
+    loginError.textContent = 'Error de red: ' + (err.message || err);
     loginError.hidden = false;
-    return;
+  } finally {
+    submit.disabled = false;
   }
-  showApp(data.session);
 });
 
 // Logout
@@ -303,6 +321,7 @@ else showLogin();
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT' || !session) showLogin();
 });
+})();
 </script>
 
 </body>
