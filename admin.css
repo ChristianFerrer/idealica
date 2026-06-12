@@ -22,6 +22,8 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
+/* The [hidden] HTML attribute must always win over any later display:flex/grid rules */
+[hidden]{display:none !important}
 body.admin-body{
   background:var(--bg);color:var(--ink);
   font-family:'Space Grotesk',system-ui,sans-serif;
