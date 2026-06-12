@@ -97,16 +97,14 @@
   });
 
   // ───────────────────────────────────────────────────────
-  // Message form — sends the message to Idealica via WhatsApp.
-  // Opens wa.me/<IDEALICA_WHATSAPP> with the user's name, phone and
-  // message pre-typed so they only need to hit Send.
+  // Message form — saves the lead to Supabase so the team can
+  // follow up via WhatsApp from the internal CRM (/admin.html).
   // ───────────────────────────────────────────────────────
-  // TODO: replace 34000000000 with the real Idealica WhatsApp number
-  //       (must match the one in the nav 'Hablemos' CTA).
-  const IDEALICA_WHATSAPP = '34000000000';
+  const SUPABASE_URL = 'https://tbcfglgabinazoekhcnt.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_yWCslyVmWGbmM8bherr6Vw_gHkJ4ohR';
   const msgForm = $('[data-msg-form]');
   if (msgForm) {
-    msgForm.addEventListener('submit', (e) => {
+    msgForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const msgEl = $('[name="message"]', msgForm);
       const nameEl = $('[name="name"]', msgForm);
@@ -121,14 +119,44 @@
         else phoneEl?.focus();
         return;
       }
-      const greeting = document.documentElement.lang === 'en'
-        ? `Hi Idealica, I'm ${name} (${phone}).\n\n${msg}`
-        : `Hola Idealica, soy ${name} (${phone}).\n\n${msg}`;
-      const url = 'https://wa.me/' + IDEALICA_WHATSAPP
-        + '?text=' + encodeURIComponent(greeting);
+      const submitBtn = msgForm.querySelector('button[type="submit"]');
+      const oldHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = document.documentElement.lang === 'en' ? 'Sending...' : 'Enviando...';
+      }
       const success = $('.qa-form-success', msgForm);
-      if (success) success.hidden = false;
-      window.open(url, '_blank', 'noopener');
+      try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/leads', {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ nombre: name, whatsapp: phone, mensaje: msg })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (success) {
+          success.classList.remove('error');
+          success.hidden = false;
+        }
+        msgForm.reset();
+      } catch (err) {
+        if (success) {
+          success.classList.add('error');
+          success.innerHTML = document.documentElement.lang === 'en'
+            ? 'Something went wrong. Please write to <a href="mailto:hola@idealica.com">hola@idealica.com</a>.'
+            : 'Algo falló. Escríbenos a <a href="mailto:hola@idealica.com">hola@idealica.com</a>.';
+          success.hidden = false;
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = oldHtml;
+        }
+      }
     });
   }
 })();

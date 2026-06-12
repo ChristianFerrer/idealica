@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Idealica · CRM</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="admin.css?v=1" />
+</head>
+<body class="admin-body">
+
+<!-- LOGIN -->
+<main class="admin-login" data-view="login" hidden>
+  <div class="admin-login-card">
+    <div class="admin-brand"><span class="star"></span>Idealica · CRM</div>
+    <h1 class="admin-login-title">Acceso interno</h1>
+    <form data-login-form autocomplete="on">
+      <label class="admin-label">
+        <span>Email</span>
+        <input type="email" name="email" required autocomplete="username" placeholder="tu@idealica.com" />
+      </label>
+      <label class="admin-label">
+        <span>Contraseña</span>
+        <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+      </label>
+      <button type="submit" class="admin-btn admin-btn-primary">Entrar<span class="arr">→</span></button>
+      <p class="admin-login-error" hidden role="alert"></p>
+    </form>
+    <p class="admin-login-foot">Solo para el equipo. <a href="/">Volver a la web</a></p>
+  </div>
+</main>
+
+<!-- CRM APP -->
+<div class="admin-app" data-view="app" hidden>
+  <header class="admin-header">
+    <div class="admin-brand"><span class="star"></span>Idealica · CRM</div>
+    <div class="admin-header-right">
+      <span class="admin-user" data-user-email></span>
+      <button type="button" class="admin-btn-text" data-logout>Salir</button>
+    </div>
+  </header>
+
+  <section class="admin-stats">
+    <button type="button" class="stat" data-stat="pendiente">
+      <span class="stat-num" data-count="pendiente">0</span>
+      <span class="stat-label">Pendientes</span>
+    </button>
+    <button type="button" class="stat" data-stat="contactado">
+      <span class="stat-num" data-count="contactado">0</span>
+      <span class="stat-label">Contactados</span>
+    </button>
+    <button type="button" class="stat" data-stat="cerrado">
+      <span class="stat-num" data-count="cerrado">0</span>
+      <span class="stat-label">Cerrados</span>
+    </button>
+    <button type="button" class="stat" data-stat="descartado">
+      <span class="stat-num" data-count="descartado">0</span>
+      <span class="stat-label">Descartados</span>
+    </button>
+  </section>
+
+  <nav class="admin-filters" role="tablist">
+    <button type="button" class="filter-btn active" data-filter="all">Todos<span class="filter-count" data-count="all">0</span></button>
+    <button type="button" class="filter-btn" data-filter="pendiente">Pendientes</button>
+    <button type="button" class="filter-btn" data-filter="contactado">Contactados</button>
+    <button type="button" class="filter-btn" data-filter="cerrado">Cerrados</button>
+    <button type="button" class="filter-btn" data-filter="descartado">Descartados</button>
+  </nav>
+
+  <main class="admin-leads" data-leads>
+    <p class="admin-empty" data-empty hidden>Sin leads en esta vista.</p>
+    <p class="admin-loading" data-loading>Cargando leads…</p>
+  </main>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+const SUPABASE_URL = 'https://tbcfglgabinazoekhcnt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yWCslyVmWGbmM8bherr6Vw_gHkJ4ohR';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+});
+
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+const loginView   = $('[data-view="login"]');
+const appView     = $('[data-view="app"]');
+const loginForm   = $('[data-login-form]');
+const loginError  = $('.admin-login-error');
+const userEmailEl = $('[data-user-email]');
+const leadsBox    = $('[data-leads]');
+const emptyEl     = $('[data-empty]');
+const loadingEl   = $('[data-loading]');
+
+let currentFilter = 'all';
+let leads = [];
+
+const STATUS_LABEL = {
+  pendiente:  'Pendiente',
+  contactado: 'Contactado',
+  cerrado:    'Cerrado',
+  descartado: 'Descartado'
+};
+
+function showLogin(){
+  loginView.hidden = false;
+  appView.hidden   = true;
+}
+function showApp(session){
+  loginView.hidden = true;
+  appView.hidden   = false;
+  userEmailEl.textContent = session.user.email;
+  loadLeads();
+}
+
+async function loadLeads(){
+  loadingEl.hidden = false;
+  emptyEl.hidden   = true;
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false });
+  loadingEl.hidden = true;
+  if (error) {
+    console.error(error);
+    return;
+  }
+  leads = data || [];
+  render();
+}
+
+function relativeTime(iso){
+  const t = new Date(iso).getTime();
+  const diff = Date.now() - t;
+  const m = Math.floor(diff / 60000);
+  if (m < 1)   return 'ahora';
+  if (m < 60)  return 'hace ' + m + ' min';
+  const h = Math.floor(m / 60);
+  if (h < 24)  return 'hace ' + h + ' h';
+  const d = Math.floor(h / 24);
+  if (d < 30)  return 'hace ' + d + ' d';
+  return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function waLink(phone){
+  return 'https://wa.me/' + phone.replace(/\D/g, '');
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function render(){
+  // counts
+  const counts = { pendiente:0, contactado:0, cerrado:0, descartado:0 };
+  leads.forEach(l => { counts[l.estado] = (counts[l.estado] || 0) + 1; });
+  $$('[data-count]').forEach(el => {
+    const k = el.dataset.count;
+    el.textContent = k === 'all' ? leads.length : (counts[k] || 0);
+  });
+
+  // filter
+  const filtered = currentFilter === 'all'
+    ? leads
+    : leads.filter(l => l.estado === currentFilter);
+
+  // clear and render
+  $$('.lead', leadsBox).forEach(el => el.remove());
+  if (filtered.length === 0) {
+    emptyEl.hidden = false;
+    return;
+  }
+  emptyEl.hidden = true;
+
+  const html = filtered.map(l => `
+    <article class="lead" data-id="${l.id}" data-estado="${l.estado}">
+      <header class="lead-head">
+        <div class="lead-meta">
+          <span class="lead-date">${relativeTime(l.created_at)}</span>
+          <span class="lead-status status-${l.estado}">${STATUS_LABEL[l.estado] || l.estado}</span>
+        </div>
+        <button type="button" class="lead-delete" data-action="delete" title="Eliminar" aria-label="Eliminar lead">×</button>
+      </header>
+      <h2 class="lead-name">${escapeHtml(l.nombre)}</h2>
+      <a class="lead-wa" href="${waLink(l.whatsapp)}" target="_blank" rel="noopener">
+        ${escapeHtml(l.whatsapp)} <span aria-hidden="true">↗ WhatsApp</span>
+      </a>
+      <p class="lead-msg">${escapeHtml(l.mensaje)}</p>
+      <div class="lead-edit">
+        <label class="lead-edit-row">
+          <span class="lead-edit-label">Estado</span>
+          <select data-action="estado">
+            <option value="pendiente"${l.estado==='pendiente'?' selected':''}>Pendiente</option>
+            <option value="contactado"${l.estado==='contactado'?' selected':''}>Contactado</option>
+            <option value="cerrado"${l.estado==='cerrado'?' selected':''}>Cerrado</option>
+            <option value="descartado"${l.estado==='descartado'?' selected':''}>Descartado</option>
+          </select>
+        </label>
+        <label class="lead-edit-row">
+          <span class="lead-edit-label">Notas internas</span>
+          <textarea data-action="notas" rows="2" placeholder="Añade notas internas (auto-guarda al salir)…">${escapeHtml(l.notas || '')}</textarea>
+        </label>
+      </div>
+    </article>
+  `).join('');
+
+  // Insert before the empty/loading markers
+  emptyEl.insertAdjacentHTML('beforebegin', html);
+
+  // Wire actions
+  $$('.lead', leadsBox).forEach(el => {
+    const id = el.dataset.id;
+    el.querySelector('[data-action="estado"]').addEventListener('change', async (e) => {
+      const estado = e.target.value;
+      const { error } = await supabase.from('leads').update({ estado }).eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      const lead = leads.find(l => l.id === id);
+      if (lead) lead.estado = estado;
+      render();
+    });
+    el.querySelector('[data-action="notas"]').addEventListener('blur', async (e) => {
+      const notas = e.target.value;
+      const lead = leads.find(l => l.id === id);
+      if (!lead || lead.notas === notas) return;
+      const { error } = await supabase.from('leads').update({ notas }).eq('id', id);
+      if (error) { alert('Error guardando notas: ' + error.message); return; }
+      lead.notas = notas;
+    });
+    el.querySelector('[data-action="delete"]').addEventListener('click', async () => {
+      if (!confirm('¿Eliminar este lead permanentemente?')) return;
+      const { error } = await supabase.from('leads').delete().eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      leads = leads.filter(l => l.id !== id);
+      render();
+    });
+  });
+}
+
+// Filter buttons
+$$('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentFilter = btn.dataset.filter;
+    $$('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+    render();
+  });
+});
+
+// Stat buttons act as filters too
+$$('.stat').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentFilter = btn.dataset.stat;
+    $$('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+    render();
+  });
+});
+
+// Login
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loginError.hidden = true;
+  const email    = loginForm.querySelector('[name="email"]').value;
+  const password = loginForm.querySelector('[name="password"]').value;
+  const submit   = loginForm.querySelector('button[type="submit"]');
+  submit.disabled = true;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  submit.disabled = false;
+  if (error) {
+    loginError.textContent = error.message || 'Error al iniciar sesión.';
+    loginError.hidden = false;
+    return;
+  }
+  showApp(data.session);
+});
+
+// Logout
+$('[data-logout]').addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  leads = [];
+  showLogin();
+});
+
+// Realtime subscription — new/updated/deleted leads refresh the list automatically
+supabase
+  .channel('leads-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
+    if (!appView.hidden) loadLeads();
+  })
+  .subscribe();
+
+// Boot: check existing session
+const { data: sessionData } = await supabase.auth.getSession();
+if (sessionData.session) showApp(sessionData.session);
+else showLogin();
+
+// React to auth state changes (e.g. refresh tokens)
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT' || !session) showLogin();
+});
+</script>
+
+</body>
+</html>
