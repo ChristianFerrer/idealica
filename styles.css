@@ -1083,22 +1083,12 @@ footer{padding:80px 0 36px;background:var(--bg)}
 
 /* ========= FOOTER MIN ========= */
 .footer-min{
-  display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:start;
   padding-bottom:48px;border-bottom:1px solid var(--line);
 }
-.footer-meta-block{
-  display:flex;flex-direction:column;gap:8px;
-  font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.04em;
-  color:var(--ink-2);align-items:flex-end;
-}
-.footer-meta-block a{color:var(--ink);font-size:15px;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.01em;transition:color .2s}
-.footer-meta-block a:hover{color:var(--lime)}
 
 /* Responsive */
 @media (max-width:1100px){
   .final.is-hero .final-card{padding:120px 32px 64px}
-  .footer-min{grid-template-columns:1fr;gap:24px}
-  .footer-meta-block{align-items:flex-start}
 }
 @media (max-width:560px){
   .final.is-hero .final-card{padding:100px 20px 56px;min-height:100svh}
@@ -1177,3 +1167,22 @@ footer{padding:80px 0 36px;background:var(--bg)}
     animation:none !important;opacity:1 !important;transform:none !important
   }
 }
+
+/* ============================================================
+   Scroll-triggered pain card flood — JS adds .is-active when a
+   card crosses ~50% viewport visibility. Mirrors the :hover state.
+   ============================================================ */
+.pain.is-active{transform:translateY(-6px);border-color:var(--c)}
+.pain.is-active::before{opacity:.6}
+.pain.is-active::after{transform:translateY(0)}
+.pain.is-active h3,
+.pain.is-active p,
+.pain.is-active h3 .serif{color:var(--bg)}
+.pain.is-active .arrow-bg{color:var(--bg);transform:translate(4px,-4px)}
+.pain.is-active .pain-num{background:var(--bg);color:var(--c)}
+/* c3 (cobalt) needs LIGHT text on the flood for AA contrast */
+.pain.c3.is-active h3,
+.pain.c3.is-active p,
+.pain.c3.is-active .arrow-bg,
+.pain.c3.is-active h3 .serif{color:var(--ink)}
+.pain.c3.is-active .pain-num{background:var(--ink);color:var(--bg)}

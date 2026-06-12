@@ -5,6 +5,23 @@
   const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ───────────────────────────────────────────────────────
+  // Scroll-triggered pain card flood — each card lights up with its
+  // accent color once it crosses ~50% viewport visibility. On
+  // desktop (3-up grid) all three light up together when the
+  // section enters view; on mobile (stacked) they reveal as the
+  // user scrolls through them.
+  // ───────────────────────────────────────────────────────
+  const painCards = $$('.pain');
+  if (painCards.length && 'IntersectionObserver' in window && !prefersReducedMotion) {
+    const painObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        e.target.classList.toggle('is-active', e.intersectionRatio >= 0.5);
+      });
+    }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+    painCards.forEach(p => painObs.observe(p));
+  }
+
+  // ───────────────────────────────────────────────────────
   // Scroll-spy: highlight nav link for the section in view
   // ───────────────────────────────────────────────────────
   const navLinks = $$('.nav-links a[href^="#"]');
