@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=4" />
+<link rel="stylesheet" href="admin.css?v=5" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -210,7 +210,57 @@ function render(){
 
   const truncate = (s, n) => (s && s.length > n) ? s.slice(0, n - 1).trimEnd() + '…' : (s || '');
 
-  const html = filtered.map(l => `
+  const scoreClass = (n) => n == null ? '' : (n >= 70 ? 'score-hi' : n >= 40 ? 'score-mid' : 'score-lo');
+  const urgencyLabel = { alta:'urgencia alta', media:'urgencia media', baja:'urgencia baja' };
+  const typeLabel    = { web:'Web', ia:'IA', automatizacion:'Automatización', mixto:'Mixto', no_claro:'Sin clasificar' };
+
+  const html = filtered.map(l => {
+    const hasTriage = l.ai_analyzed_at && !l.ai_error;
+    const scorePill = hasTriage
+      ? `<span class="lead-ai-score ${scoreClass(l.ai_score)}" title="Fit score IA">${l.ai_score}</span>`
+      : (l.ai_error ? `<span class="lead-ai-score score-err" title="Triage IA falló">!</span>` : '');
+    const triageBlock = hasTriage ? `
+      <div class="ai-triage">
+        <div class="ai-triage-head">
+          <span class="ai-eyebrow">Triage IA</span>
+          <span class="ai-meta">${escapeHtml(typeLabel[l.ai_type] || l.ai_type || '—')} · ${escapeHtml(urgencyLabel[l.ai_urgency] || l.ai_urgency || '—')} · ${l.ai_score}/100</span>
+        </div>
+        ${l.ai_summary ? `<p class="ai-summary">${escapeHtml(l.ai_summary)}</p>` : ''}
+        ${(l.ai_flags && l.ai_flags.length) ? `<div class="ai-flags">${l.ai_flags.map(f => `<span class="ai-flag">${escapeHtml(f)}</span>`).join('')}</div>` : ''}
+        ${l.ai_draft_reply ? `
+          <div class="ai-draft" data-ai-draft>
+            <div class="ai-draft-head">
+              <span class="ai-eyebrow">Borrador sugerido</span>
+              <div class="ai-draft-actions">
+                <button type="button" class="ai-mini" data-action="copy-draft">Copiar</button>
+                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(l.ai_draft_reply)}" target="_blank" rel="noopener">Abrir en WhatsApp ↗</a>
+              </div>
+            </div>
+            <p class="ai-draft-text" data-draft-text>${escapeHtml(l.ai_draft_reply)}</p>
+          </div>
+        ` : ''}
+      </div>
+    ` : (l.ai_error ? `<p class="ai-triage-error">Triage IA falló: ${escapeHtml(l.ai_error)}</p>` : '');
+
+    const variantsBlock = (l.ai_drafts && Array.isArray(l.ai_drafts.variants) && l.ai_drafts.variants.length) ? `
+      <div class="ai-variants" data-ai-variants>
+        <span class="ai-eyebrow">Variantes generadas</span>
+        ${l.ai_drafts.variants.map((v, i) => `
+          <div class="ai-variant">
+            <div class="ai-variant-head">
+              <span class="ai-variant-label">${escapeHtml(v.label || ('Variante ' + (i+1)))}</span>
+              <div class="ai-draft-actions">
+                <button type="button" class="ai-mini" data-action="copy-variant" data-variant-idx="${i}">Copiar</button>
+                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(v.text)}" target="_blank" rel="noopener">WhatsApp ↗</a>
+              </div>
+            </div>
+            <p class="ai-variant-text">${escapeHtml(v.text)}</p>
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+
+    return `
     <article class="lead" data-id="${l.id}" data-estado="${l.estado}">
       <button type="button" class="lead-row" data-toggle aria-expanded="false" aria-controls="lead-body-${l.id}">
         <span class="lead-status-pill status-${l.estado}">${STATUS_LABEL[l.estado] || l.estado}</span>
@@ -218,6 +268,7 @@ function render(){
         <span class="lead-name">${escapeHtml(l.nombre)}</span>
         <span class="lead-phone-inline">${escapeHtml(l.whatsapp)}</span>
         <span class="lead-msg-preview">${escapeHtml(truncate(l.mensaje, 90))}</span>
+        ${scorePill}
         <span class="lead-chevron" aria-hidden="true">›</span>
       </button>
       <div class="lead-body" id="lead-body-${l.id}" hidden>
@@ -225,6 +276,12 @@ function render(){
           ${escapeHtml(l.whatsapp)} <span aria-hidden="true">↗ WhatsApp</span>
         </a>
         <p class="lead-msg-full">${escapeHtml(l.mensaje)}</p>
+        ${triageBlock}
+        <div class="ai-compose-row">
+          <button type="button" class="ai-compose-btn" data-action="compose">✨ Sugerir respuesta</button>
+          <span class="ai-compose-hint" data-compose-hint hidden></span>
+        </div>
+        ${variantsBlock}
         <div class="lead-edit">
           <label class="lead-edit-row">
             <span class="lead-edit-label">Estado</span>
@@ -243,7 +300,7 @@ function render(){
         <button type="button" class="lead-delete" data-action="delete">Eliminar lead</button>
       </div>
     </article>
-  `).join('');
+  `;}).join('');
 
   // Insert before the empty/loading markers
   emptyEl.insertAdjacentHTML('beforebegin', html);
@@ -284,7 +341,82 @@ function render(){
       leads = leads.filter(l => l.id !== id);
       render();
     });
+
+    // Copy main AI draft
+    const copyDraftBtn = el.querySelector('[data-action="copy-draft"]');
+    if (copyDraftBtn) {
+      copyDraftBtn.addEventListener('click', async () => {
+        const lead = leads.find(l => l.id === id);
+        if (!lead?.ai_draft_reply) return;
+        await copyToClipboard(lead.ai_draft_reply, copyDraftBtn);
+      });
+    }
+    // Copy a variant
+    $$('[data-action="copy-variant"]', el).forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const lead = leads.find(l => l.id === id);
+        const idx  = Number(btn.dataset.variantIdx);
+        const v    = lead?.ai_drafts?.variants?.[idx];
+        if (!v?.text) return;
+        await copyToClipboard(v.text, btn);
+      });
+    });
+    // Generate variants on-demand via compose-reply
+    const composeBtn = el.querySelector('[data-action="compose"]');
+    if (composeBtn) {
+      composeBtn.addEventListener('click', async () => {
+        const hint = el.querySelector('[data-compose-hint]');
+        composeBtn.disabled = true;
+        const original = composeBtn.textContent;
+        composeBtn.textContent = '… generando';
+        hint.hidden = true;
+        try {
+          const result = await composeReply(id);
+          if (result.error) throw new Error(result.error);
+          const lead = leads.find(l => l.id === id);
+          if (lead) lead.ai_drafts = { variants: result.variants, generated_at: new Date().toISOString() };
+          render();
+          // Re-open the body after re-render
+          const reopened = document.querySelector('.lead[data-id="' + id + '"] [data-toggle]');
+          if (reopened) reopened.click();
+        } catch (e) {
+          hint.textContent = 'Error: ' + (e.message || e);
+          hint.hidden = false;
+        } finally {
+          composeBtn.disabled = false;
+          composeBtn.textContent = original;
+        }
+      });
+    }
   });
+}
+
+async function copyToClipboard(text, btn){
+  try {
+    await navigator.clipboard.writeText(text);
+    const original = btn.textContent;
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => { btn.textContent = original; }, 1400);
+  } catch (e) {
+    alert('No se pudo copiar: ' + (e.message || e));
+  }
+}
+
+async function composeReply(leadId){
+  const sess = (await supabase.auth.getSession()).data.session;
+  if (!sess) throw new Error('sin sesión');
+  const res = await fetch(SUPABASE_URL + '/functions/v1/compose-reply', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + sess.access_token,
+      'apikey':         SUPABASE_KEY,
+      'Content-Type':   'application/json',
+    },
+    body: JSON.stringify({ leadId }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return { error: body.error || ('HTTP ' + res.status) };
+  return body;
 }
 
 // Filter buttons
