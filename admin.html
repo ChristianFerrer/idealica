@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=7" />
+<link rel="stylesheet" href="admin.css?v=8" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -46,6 +46,7 @@
 
   <nav class="admin-tabs" role="tablist">
     <button type="button" class="tab-btn active" data-tab="leads" role="tab">Leads</button>
+    <button type="button" class="tab-btn" data-tab="prospects" role="tab">Prospectos</button>
     <button type="button" class="tab-btn" data-tab="metrics" role="tab">Métricas</button>
     <button type="button" class="tab-btn" data-tab="team" role="tab">Equipo</button>
   </nav>
@@ -114,6 +115,58 @@
         <header class="metrics-card-head"><span class="metrics-eyebrow">Top fuentes</span></header>
         <div class="metrics-bars" data-by-ref></div>
       </article>
+    </div>
+  </section>
+
+  <section class="admin-section" data-section="prospects" hidden>
+    <header class="metrics-head">
+      <div>
+        <h2 class="metrics-title">Prospectos</h2>
+        <p class="metrics-note">Outbound asistido. Tú decides, la IA hace el research. Pega dominios, descubre por ICP, manda mensajes humanos.</p>
+      </div>
+      <div class="metrics-period" role="tablist">
+        <button type="button" class="period-btn active" data-pview="inbox">Inbox</button>
+        <button type="button" class="period-btn" data-pview="pipeline">En curso</button>
+        <button type="button" class="period-btn" data-pview="icps">ICPs</button>
+      </div>
+    </header>
+
+    <!-- INBOX: nuevos prospectos para revisar -->
+    <div class="pview" data-pview-section="inbox">
+      <div class="pros-bulk-add">
+        <textarea data-bulk-domains rows="2" placeholder="Pega 1 o varios dominios separados por coma o salto de línea (clinicaverdi.com, abogados-bcn.com)"></textarea>
+        <div class="pros-bulk-controls">
+          <label class="pros-icp-select">
+            <span>ICP</span>
+            <select data-bulk-icp><option value="">(sin asignar)</option></select>
+          </label>
+          <button type="button" class="ai-compose-btn" data-bulk-analyze>Analizar dominios</button>
+          <span class="ai-compose-hint" data-bulk-hint hidden></span>
+        </div>
+      </div>
+      <div class="pros-list" data-pros-list="sugerido"><p class="admin-loading" data-pros-loading>Cargando prospectos…</p></div>
+    </div>
+
+    <!-- PIPELINE: aprobados, contactados, seguimientos, respondieron -->
+    <div class="pview" data-pview-section="pipeline" hidden>
+      <div class="pros-pipeline-tabs">
+        <button type="button" class="filter-btn active" data-pstatus="aprobado">Aprobados</button>
+        <button type="button" class="filter-btn" data-pstatus="contactado">Contactados</button>
+        <button type="button" class="filter-btn" data-pstatus="seguimiento_1">Follow-up 1</button>
+        <button type="button" class="filter-btn" data-pstatus="seguimiento_2">Follow-up 2</button>
+        <button type="button" class="filter-btn" data-pstatus="respondio">Respondieron</button>
+        <button type="button" class="filter-btn" data-pstatus="sin_respuesta">Sin respuesta</button>
+        <button type="button" class="filter-btn" data-pstatus="descartado">Descartados</button>
+      </div>
+      <div class="pros-list" data-pros-list="pipeline"></div>
+    </div>
+
+    <!-- ICPs -->
+    <div class="pview" data-pview-section="icps" hidden>
+      <div class="icp-create">
+        <button type="button" class="ai-compose-btn" data-icp-new>+ Nuevo ICP</button>
+      </div>
+      <div class="icp-list" data-icp-list><p class="admin-loading" data-icp-loading>Cargando ICPs…</p></div>
     </div>
   </section>
 
@@ -715,8 +768,9 @@ $$('[data-tab]').forEach(btn => {
     const tab = btn.dataset.tab;
     $$('[data-tab]').forEach(b => b.classList.toggle('active', b === btn));
     $$('[data-section]').forEach(s => { s.hidden = (s.dataset.section !== tab); });
-    if (tab === 'team'    && !teamLoaded)    loadTeam();
-    if (tab === 'metrics' && !metricsLoaded) loadMetrics();
+    if (tab === 'team'      && !teamLoaded)      loadTeam();
+    if (tab === 'metrics'   && !metricsLoaded)   loadMetrics();
+    if (tab === 'prospects' && !prospectsLoaded) loadProspects();
   });
 });
 
@@ -891,6 +945,474 @@ supabase
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, () => {
     const metricsSection = $('[data-section="metrics"]');
     if (metricsSection && !metricsSection.hidden && metricsLoaded) loadMetrics();
+  })
+  .subscribe();
+
+// ─────────────────────────────────────────────────────────────
+// PROSPECTS (outbound)
+// ─────────────────────────────────────────────────────────────
+let prospects     = [];
+let icps          = [];
+let prospectsLoaded = false;
+let currentPview  = 'inbox';
+let currentPStatus = 'aprobado';
+
+const PROSPECT_STATUS_LABEL = {
+  sugerido:      'Sugerido',
+  aprobado:      'Aprobado',
+  contactado:    'Contactado',
+  seguimiento_1: 'Follow-up 1',
+  seguimiento_2: 'Follow-up 2',
+  respondio:     'Respondió',
+  sin_respuesta: 'Sin respuesta',
+  descartado:    'Descartado',
+};
+
+async function callFn(name, body){
+  const sess = (await supabase.auth.getSession()).data.session;
+  if (!sess) throw new Error('sin sesión');
+  const res = await fetch(SUPABASE_URL + '/functions/v1/' + name, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + sess.access_token,
+      'apikey':         SUPABASE_KEY,
+      'Content-Type':   'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+async function loadProspects(){
+  prospectsLoaded = true;
+  const [pRes, iRes] = await Promise.all([
+    supabase.from('prospects').select('*').order('created_at', { ascending: false }).limit(500),
+    supabase.from('icps').select('*').order('name'),
+  ]);
+  if (pRes.error) { console.error(pRes.error); return; }
+  if (iRes.error) { console.error(iRes.error); return; }
+  prospects = pRes.data || [];
+  icps      = iRes.data || [];
+  // populate ICP select
+  const sel = $('[data-bulk-icp]');
+  if (sel) sel.innerHTML = '<option value="">(sin asignar)</option>' + icps.filter(i => i.active).map(i =>
+    `<option value="${i.id}">${escapeHtml(i.name)}</option>`).join('');
+  renderProspects();
+}
+
+function scoreBadge(s){
+  if (s == null) return '<span class="lead-ai-score" style="opacity:.5">—</span>';
+  const cls = s >= 70 ? 'score-hi' : s >= 40 ? 'score-mid' : 'score-lo';
+  return `<span class="lead-ai-score ${cls}">${s}</span>`;
+}
+
+function prospectRowHtml(p, mode){
+  const idAttr = p.id;
+  const variantsBlock = (p.draft_variants && Array.isArray(p.draft_variants.variants) && p.draft_variants.variants.length) ? `
+    <div class="ai-variants">
+      <span class="ai-eyebrow">${escapeHtml(p.draft_variants.stage === 'seguimiento_2' ? 'Follow-up 2 — variantes' : (p.draft_variants.stage === 'seguimiento_1' ? 'Follow-up 1 — variantes' : 'Variantes generadas'))}</span>
+      ${p.draft_variants.variants.map((v, i) => `
+        <div class="ai-variant">
+          <div class="ai-variant-head">
+            <span class="ai-variant-label">${escapeHtml(v.label || ('Variante ' + (i+1)))}</span>
+            <div class="ai-draft-actions">
+              <button type="button" class="ai-mini" data-pros-action="copy-pvariant" data-pid="${idAttr}" data-vidx="${i}">${ICONS.copy}<span>Copiar</span></button>
+            </div>
+          </div>
+          <p class="ai-variant-text">${escapeHtml(v.text)}</p>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
+
+  const insightBlock = p.insight ? `
+    <div class="ai-triage" style="margin-top:14px">
+      <div class="ai-triage-head">
+        <span class="ai-eyebrow">Insight IA</span>
+        <span class="ai-meta">${p.vertical ? escapeHtml(p.vertical) : '—'} · ${p.city ? escapeHtml(p.city) : '—'} · ${p.score ?? '—'}/100</span>
+      </div>
+      <p class="ai-summary">${escapeHtml(p.insight)}</p>
+      ${p.decision_maker_name ? `<p class="ai-summary" style="opacity:.85"><strong>${escapeHtml(p.decision_maker_name)}</strong>${p.decision_maker_role ? ' · ' + escapeHtml(p.decision_maker_role) : ''}</p>` : ''}
+      ${p.draft_message ? `
+        <div class="ai-draft">
+          <div class="ai-draft-head">
+            <span class="ai-eyebrow">Mensaje sugerido</span>
+            <div class="ai-draft-actions">
+              <button type="button" class="ai-mini" data-pros-action="copy-draft" data-pid="${idAttr}">${ICONS.copy}<span>Copiar</span></button>
+            </div>
+          </div>
+          <p class="ai-draft-text">${escapeHtml(p.draft_message)}</p>
+        </div>
+      ` : ''}
+    </div>
+  ` : (p.ai_error ? `<p class="ai-triage-error">Análisis IA falló: ${escapeHtml(p.ai_error)}</p>` : '');
+
+  // Actions per stage
+  let actions = '';
+  if (p.status === 'sugerido') {
+    actions = `
+      ${p.insight ? `<button type="button" class="ai-mini ai-mini-primary" data-pros-action="approve" data-pid="${idAttr}">${ICONS.check}<span>Aprobar</span></button>` : `<button type="button" class="ai-mini" data-pros-action="analyze" data-pid="${idAttr}">${ICONS.sparkle}<span>Analizar con IA</span></button>`}
+      <button type="button" class="ai-mini" data-pros-action="discard" data-pid="${idAttr}">Descartar</button>
+    `;
+  } else if (p.status === 'aprobado') {
+    actions = `
+      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="mark-contacted" data-pid="${idAttr}">${ICONS.check}<span>Marcar como contactado</span></button>
+      <button type="button" class="ai-mini" data-pros-action="reanalyze" data-pid="${idAttr}">${ICONS.sparkle}<span>Re-analizar</span></button>
+    `;
+  } else if (p.status === 'contactado') {
+    actions = `
+      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="followup-1" data-pid="${idAttr}">${ICONS.sparkle}<span>Generar follow-up</span></button>
+      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}">Marcar respondido</button>
+    `;
+  } else if (p.status === 'seguimiento_1') {
+    actions = `
+      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="followup-2" data-pid="${idAttr}">${ICONS.sparkle}<span>Generar último follow-up</span></button>
+      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}">Marcar respondido</button>
+    `;
+  } else if (p.status === 'seguimiento_2') {
+    actions = `
+      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}">Marcar respondido</button>
+      <button type="button" class="ai-mini" data-pros-action="mark-noreply" data-pid="${idAttr}">Sin respuesta</button>
+    `;
+  }
+  // Common: open website + delete
+  const openLink = `<a class="ai-mini" href="${p.url || ('https://' + p.domain)}" target="_blank" rel="noopener">${ICONS.ext}<span>Ver web</span></a>`;
+  const deleteBtn = `<button type="button" class="ai-mini" data-pros-action="delete" data-pid="${idAttr}" style="color:var(--magenta);border-color:rgba(255,61,127,.3)">Eliminar</button>`;
+
+  return `
+    <article class="lead" data-pid="${idAttr}" data-estado="${p.status}">
+      <button type="button" class="lead-row" data-pros-toggle aria-expanded="false">
+        <span class="lead-status-pill status-${p.status}">${PROSPECT_STATUS_LABEL[p.status] || p.status}</span>
+        <span class="lead-date">${relativeTime(p.created_at)}</span>
+        <span class="lead-name">${escapeHtml(p.company_name || p.domain)}</span>
+        <span class="lead-phone-inline">${escapeHtml(p.domain)}</span>
+        <span class="lead-msg-preview">${escapeHtml((p.insight || '(sin analizar)').slice(0, 100))}</span>
+        ${scoreBadge(p.score)}
+        <span class="lead-chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="lead-body" hidden>
+        ${insightBlock}
+        ${variantsBlock}
+        <div class="ai-compose-row" style="margin-top:14px">${actions}${openLink}${deleteBtn}</div>
+        <div class="lead-edit" style="margin-top:14px">
+          <label class="lead-edit-row">
+            <span class="lead-edit-label">Notas</span>
+            <textarea data-pros-notes data-pid="${idAttr}" rows="2" placeholder="Notas internas (auto-guarda al salir)…">${escapeHtml(p.notes || '')}</textarea>
+          </label>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderProspects(){
+  if (currentPview === 'inbox') {
+    const list = prospects.filter(p => p.status === 'sugerido');
+    const html = list.length
+      ? list.map(p => prospectRowHtml(p, 'inbox')).join('')
+      : '<p class="metrics-empty" style="padding:20px">Sin prospectos pendientes. Pega dominios arriba para empezar, o descubre con un ICP.</p>';
+    $('[data-pros-list="sugerido"]').innerHTML = html;
+    wireProspectRows($('[data-pros-list="sugerido"]'));
+  } else if (currentPview === 'pipeline') {
+    const list = prospects.filter(p => p.status === currentPStatus);
+    const html = list.length
+      ? list.map(p => prospectRowHtml(p, 'pipeline')).join('')
+      : '<p class="metrics-empty" style="padding:20px">Sin prospectos en este estado.</p>';
+    $('[data-pros-list="pipeline"]').innerHTML = html;
+    wireProspectRows($('[data-pros-list="pipeline"]'));
+  } else if (currentPview === 'icps') {
+    renderIcps();
+  }
+}
+
+function wireProspectRows(scope){
+  $$('[data-pros-toggle]', scope).forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('[data-pros-action]') || e.target.closest('a')) return;
+      const open = row.getAttribute('aria-expanded') === 'true';
+      row.setAttribute('aria-expanded', String(!open));
+      row.parentElement.querySelector('.lead-body').hidden = open;
+    });
+  });
+  $$('[data-pros-action]', scope).forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const action = btn.dataset.prosAction;
+      const id = btn.dataset.pid;
+      await runProspectAction(action, id, btn);
+    });
+  });
+  $$('[data-pros-notes]', scope).forEach(t => {
+    t.addEventListener('blur', async () => {
+      const id = t.dataset.pid;
+      const p = prospects.find(x => x.id === id);
+      if (!p || p.notes === t.value) return;
+      const { error } = await supabase.from('prospects').update({ notes: t.value }).eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      p.notes = t.value;
+    });
+  });
+}
+
+async function runProspectAction(action, id, btn){
+  const p = prospects.find(x => x.id === id);
+  if (!p) return;
+  const setBusy = (txt) => { if (btn) { btn.disabled = true; const orig = btn.innerHTML; btn.dataset.orig = orig; btn.innerHTML = '<span>' + txt + '</span>'; } };
+  const setIdle = () => { if (btn) { btn.disabled = false; if (btn.dataset.orig) btn.innerHTML = btn.dataset.orig; } };
+
+  try {
+    if (action === 'analyze' || action === 'reanalyze') {
+      setBusy('… analizando');
+      const r = await callFn('prospect-analyze', { prospect_id: id });
+      Object.assign(p, r);
+      renderProspects();
+    } else if (action === 'approve') {
+      const { error } = await supabase.from('prospects').update({ status: 'aprobado' }).eq('id', id);
+      if (error) throw error;
+      p.status = 'aprobado'; renderProspects();
+    } else if (action === 'discard') {
+      const { error } = await supabase.from('prospects').update({ status: 'descartado' }).eq('id', id);
+      if (error) throw error;
+      p.status = 'descartado'; renderProspects();
+    } else if (action === 'mark-contacted') {
+      const { error } = await supabase.from('prospects').update({ status: 'contactado' }).eq('id', id);
+      if (error) throw error;
+      p.status = 'contactado'; p.contacted_at = new Date().toISOString(); renderProspects();
+    } else if (action === 'followup-1') {
+      setBusy('… generando');
+      const r = await callFn('compose-followup', { prospect_id: id, stage: 'seguimiento_1' });
+      const { error } = await supabase.from('prospects').update({ status: 'seguimiento_1' }).eq('id', id);
+      if (error) throw error;
+      p.status = 'seguimiento_1';
+      p.draft_variants = { stage: 'seguimiento_1', variants: r.variants, generated_at: new Date().toISOString() };
+      renderProspects();
+    } else if (action === 'followup-2') {
+      setBusy('… generando');
+      const r = await callFn('compose-followup', { prospect_id: id, stage: 'seguimiento_2' });
+      const { error } = await supabase.from('prospects').update({ status: 'seguimiento_2' }).eq('id', id);
+      if (error) throw error;
+      p.status = 'seguimiento_2';
+      p.draft_variants = { stage: 'seguimiento_2', variants: r.variants, generated_at: new Date().toISOString() };
+      renderProspects();
+    } else if (action === 'mark-replied') {
+      const { error } = await supabase.from('prospects').update({ status: 'respondio' }).eq('id', id);
+      if (error) throw error;
+      p.status = 'respondio'; p.replied_at = new Date().toISOString(); renderProspects();
+    } else if (action === 'mark-noreply') {
+      const { error } = await supabase.from('prospects').update({ status: 'sin_respuesta' }).eq('id', id);
+      if (error) throw error;
+      p.status = 'sin_respuesta'; renderProspects();
+    } else if (action === 'delete') {
+      if (!confirm('¿Eliminar este prospecto permanentemente?')) { setIdle(); return; }
+      const { error } = await supabase.from('prospects').delete().eq('id', id);
+      if (error) throw error;
+      prospects = prospects.filter(x => x.id !== id); renderProspects();
+    } else if (action === 'copy-draft') {
+      await navigator.clipboard.writeText(p.draft_message || '');
+      btn.innerHTML = ICONS.check + '<span>Copiado</span>';
+      setTimeout(() => { if (btn.dataset.orig) btn.innerHTML = btn.dataset.orig; }, 1400);
+    } else if (action === 'copy-pvariant') {
+      const v = p.draft_variants?.variants?.[Number(btn.dataset.vidx)];
+      if (!v) return;
+      await navigator.clipboard.writeText(v.text);
+      btn.innerHTML = ICONS.check + '<span>Copiado</span>';
+      setTimeout(() => { if (btn.dataset.orig) btn.innerHTML = btn.dataset.orig; }, 1400);
+    }
+  } catch (e) {
+    alert('Error: ' + (e.message || e));
+    setIdle();
+  }
+}
+
+// Bulk analyze pasted domains
+$('[data-bulk-analyze]')?.addEventListener('click', async () => {
+  const txt = ($('[data-bulk-domains]')?.value || '').trim();
+  if (!txt) { alert('Pega al menos un dominio.'); return; }
+  const icpId = $('[data-bulk-icp]')?.value || null;
+  const domains = Array.from(new Set(txt.split(/[\s,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean)));
+  const hint = $('[data-bulk-hint]');
+  const btn  = $('[data-bulk-analyze]');
+  btn.disabled = true;
+  let ok = 0, fail = 0;
+  for (let i = 0; i < domains.length; i++) {
+    hint.hidden = false;
+    hint.style.color = 'var(--ink-3)';
+    hint.textContent = 'Analizando ' + (i+1) + '/' + domains.length + ' (' + domains[i] + ')…';
+    try {
+      await callFn('prospect-analyze', { domain: domains[i], icp_id: icpId || undefined });
+      ok++;
+    } catch (e) { fail++; console.warn('analyze failed', domains[i], e); }
+  }
+  hint.style.color = fail ? 'var(--magenta)' : 'var(--lime)';
+  hint.textContent = ok + ' analizados, ' + fail + ' fallaron.';
+  $('[data-bulk-domains]').value = '';
+  btn.disabled = false;
+  await loadProspects();
+});
+
+// Pipeline status tabs
+$$('[data-pstatus]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentPStatus = btn.dataset.pstatus;
+    $$('[data-pstatus]').forEach(b => b.classList.toggle('active', b === btn));
+    renderProspects();
+  });
+});
+
+// Prospects view switcher (inbox / pipeline / icps)
+$$('[data-pview]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentPview = btn.dataset.pview;
+    $$('[data-pview]').forEach(b => b.classList.toggle('active', b === btn));
+    $$('[data-pview-section]').forEach(s => { s.hidden = (s.dataset.pviewSection !== currentPview); });
+    renderProspects();
+  });
+});
+
+// ─── ICPs ────────────────────────────────────────────────
+function renderIcps(){
+  const box = $('[data-icp-list]');
+  if (!icps.length) { box.innerHTML = '<p class="metrics-empty" style="padding:20px">Sin ICPs todavía. Crea uno para empezar a descubrir prospectos automáticamente.</p>'; return; }
+  box.innerHTML = icps.map(i => {
+    const count = prospects.filter(p => p.icp_id === i.id).length;
+    return `
+      <article class="icp-card" data-icp-id="${i.id}">
+        <header class="icp-head">
+          <div class="icp-id-block">
+            <h3 class="icp-name">${escapeHtml(i.name)}</h3>
+            <p class="icp-meta">${escapeHtml(i.vertical || '—')} · ${escapeHtml(i.location || 'sin ubicación')} · ${count} prospectos</p>
+          </div>
+          <label class="ch-toggle"><input type="checkbox" data-icp-active ${i.active ? 'checked' : ''}><span>Activo</span></label>
+        </header>
+        <p class="icp-desc">${escapeHtml(i.description)}</p>
+        ${i.signals ? `<p class="icp-signals"><strong>Señales:</strong> ${escapeHtml(i.signals)}</p>` : ''}
+        ${i.examples ? `<p class="icp-signals"><strong>Ejemplos:</strong> ${escapeHtml(i.examples)}</p>` : ''}
+        <div class="ai-compose-row" style="margin-top:14px">
+          <button type="button" class="ai-compose-btn" data-icp-discover>${ICONS.sparkle}<span>Descubrir prospectos</span></button>
+          <button type="button" class="ai-mini" data-icp-edit>Editar</button>
+          <button type="button" class="ai-mini" data-icp-delete style="color:var(--magenta);border-color:rgba(255,61,127,.3)">Eliminar</button>
+          <span class="ai-compose-hint" data-icp-hint hidden></span>
+        </div>
+      </article>
+    `;
+  }).join('');
+  // wire ICP cards
+  $$('.icp-card').forEach(card => {
+    const id = card.dataset.icpId;
+    const icp = icps.find(i => i.id === id);
+    $('[data-icp-active]', card)?.addEventListener('change', async (e) => {
+      const { error } = await supabase.from('icps').update({ active: e.target.checked }).eq('id', id);
+      if (error) { alert('Error: ' + error.message); e.target.checked = !e.target.checked; return; }
+      icp.active = e.target.checked;
+    });
+    $('[data-icp-edit]', card)?.addEventListener('click', () => openIcpEditor(icp));
+    $('[data-icp-delete]', card)?.addEventListener('click', async () => {
+      if (!confirm('¿Eliminar el ICP "' + icp.name + '"? Los prospectos asociados se conservan.')) return;
+      const { error } = await supabase.from('icps').delete().eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      icps = icps.filter(x => x.id !== id);
+      renderIcps();
+    });
+    $('[data-icp-discover]', card)?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const hint = card.querySelector('[data-icp-hint]');
+      btn.disabled = true;
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<span>… buscando en la web (puede tardar 30-60s)</span>';
+      hint.hidden = true;
+      try {
+        const r = await callFn('prospect-discover', { icp_id: id, count: 8 });
+        hint.style.color = 'var(--lime)';
+        hint.textContent = r.inserted + ' nuevos prospectos añadidos al Inbox (de ' + r.found + ' encontrados).';
+        hint.hidden = false;
+        await loadProspects();
+      } catch (e) {
+        hint.style.color = 'var(--magenta)';
+        hint.textContent = 'Error: ' + (e.message || e);
+        hint.hidden = false;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    });
+  });
+}
+
+function openIcpEditor(icp){
+  const isNew = !icp;
+  const data = icp || { name:'', description:'', vertical:'', location:'', size_hint:'', signals:'', examples:'', active:true };
+  // simple inline modal via prompt-ish overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'icp-modal-overlay';
+  overlay.innerHTML = `
+    <div class="icp-modal">
+      <header class="icp-modal-head">
+        <h3>${isNew ? 'Nuevo ICP' : 'Editar ICP'}</h3>
+        <button type="button" class="ai-mini" data-icp-cancel>Cerrar</button>
+      </header>
+      <div class="icp-modal-body">
+        <label><span>Nombre <em class="hint">(corto, p.ej. "Clínicas estéticas BCN")</em></span>
+          <input type="text" data-f="name" value="${escapeAttr(data.name)}" maxlength="80" placeholder="Clínicas estéticas BCN"></label>
+        <label><span>Descripción <em class="hint">(qué empresas buscas y por qué encajan)</em></span>
+          <textarea data-f="description" rows="3" maxlength="800" placeholder="Clínicas de estética con 2-10 sucursales en Barcelona, con agenda manual por WhatsApp o teléfono.">${escapeHtml(data.description)}</textarea></label>
+        <div class="icp-modal-row">
+          <label><span>Vertical</span>
+            <input type="text" data-f="vertical" value="${escapeAttr(data.vertical || '')}" placeholder="Salud / estética"></label>
+          <label><span>Ubicación</span>
+            <input type="text" data-f="location" value="${escapeAttr(data.location || '')}" placeholder="Barcelona / Cataluña"></label>
+          <label><span>Tamaño esperado</span>
+            <input type="text" data-f="size_hint" value="${escapeAttr(data.size_hint || '')}" placeholder="2-10 sucursales / 5-30 empleados"></label>
+        </div>
+        <label><span>Señales a buscar <em class="hint">(qué pistas en su web indican fit)</em></span>
+          <textarea data-f="signals" rows="2" maxlength="500" placeholder="Reserva por teléfono, múltiples sucursales, sin booking online, blog desactualizado.">${escapeHtml(data.signals || '')}</textarea></label>
+        <label><span>Ejemplos <em class="hint">(empresas concretas, opcional)</em></span>
+          <textarea data-f="examples" rows="2" maxlength="500" placeholder="clinicajuana.com, esteticabcn.es">${escapeHtml(data.examples || '')}</textarea></label>
+      </div>
+      <footer class="icp-modal-foot">
+        <button type="button" class="ai-compose-btn" data-icp-save>${isNew ? 'Crear ICP' : 'Guardar cambios'}</button>
+      </footer>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('[data-icp-cancel]').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  overlay.querySelector('[data-icp-save]').addEventListener('click', async () => {
+    const patch = {};
+    ['name','description','vertical','location','size_hint','signals','examples'].forEach(f => {
+      patch[f] = (overlay.querySelector('[data-f="' + f + '"]').value || '').trim() || null;
+    });
+    if (!patch.name || !patch.description || patch.description.length < 10) {
+      alert('Nombre y descripción (mínimo 10 caracteres) son obligatorios.');
+      return;
+    }
+    if (isNew) {
+      const sess = (await supabase.auth.getSession()).data.session;
+      patch.created_by = sess?.user?.id;
+      const { data: ins, error } = await supabase.from('icps').insert(patch).select('*').single();
+      if (error) { alert('Error: ' + error.message); return; }
+      icps.push(ins);
+    } else {
+      const { data: upd, error } = await supabase.from('icps').update(patch).eq('id', icp.id).select('*').single();
+      if (error) { alert('Error: ' + error.message); return; }
+      Object.assign(icp, upd);
+    }
+    overlay.remove();
+    renderIcps();
+    // refresh ICP select in bulk add too
+    const sel = $('[data-bulk-icp]');
+    if (sel) sel.innerHTML = '<option value="">(sin asignar)</option>' + icps.filter(i => i.active).map(i => `<option value="${i.id}">${escapeHtml(i.name)}</option>`).join('');
+  });
+}
+
+$('[data-icp-new]')?.addEventListener('click', () => openIcpEditor(null));
+
+// Realtime for prospects
+supabase
+  .channel('prospects-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'prospects' }, () => {
+    if (prospectsLoaded) loadProspects();
   })
   .subscribe();
 
