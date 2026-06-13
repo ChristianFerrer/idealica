@@ -895,6 +895,66 @@ button{font-family:inherit;cursor:pointer}
 
 .pros-list{display:flex;flex-direction:column;gap:6px}
 
+/* Override the lead-row grid for prospects: add an ICP column between domain and insight preview */
+.pros-list .lead-row{
+  grid-template-columns:108px 70px 160px 140px 120px 1fr auto 18px;
+}
+.lead-icp-tag{
+  display:inline-flex;align-items:center;
+  padding:3px 9px;border-radius:6px;
+  background:rgba(74,158,255,.10);color:var(--cobalt);
+  border:1px solid rgba(74,158,255,.25);
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;
+  font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:100%;
+}
+.lead-icp-tag.lead-icp-none{
+  background:transparent;color:var(--ink-3);border-color:var(--line-2);
+  font-weight:400;
+}
+
+.pros-filter-row{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:14px;flex-wrap:wrap;
+}
+.pros-filter-count{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+}
+
+/* Score badge: extra states for prospect lifecycle */
+.lead-ai-score.score-pending{
+  background:transparent;color:var(--ink-3);
+  border:1px dashed var(--line-2);
+  font-size:13px;letter-spacing:1px;font-weight:400;
+}
+
+/* Hint inside pre-analysis insight block */
+.ai-triage-hint{
+  margin:8px 0 0;padding:8px 12px;
+  background:rgba(74,158,255,.06);
+  border:1px solid rgba(74,158,255,.18);
+  border-radius:8px;
+  font-size:12px;line-height:1.5;color:var(--ink-2);
+}
+.ai-triage-hint strong{color:var(--cobalt);font-weight:600}
+
+@media (max-width:900px){
+  .pros-list .lead-row{
+    grid-template-columns:108px 70px 1fr 90px auto 18px;
+  }
+  .pros-list .lead-row .lead-phone-inline,
+  .pros-list .lead-row .lead-msg-preview{display:none}
+}
+@media (max-width:600px){
+  .pros-list .lead-row{
+    grid-template-columns:auto 1fr auto 18px;
+  }
+  .pros-list .lead-row .lead-date,
+  .pros-list .lead-row .lead-icp-tag{display:none}
+}
+
 /* Prospect status pill colors (reuse lead-status-pill base) */
 .lead-status-pill.status-sugerido     { background:rgba(255,255,255,.06); color:var(--ink-2)  }
 .lead-status-pill.status-aprobado     { background:rgba(212,255,58,.12);  color:var(--lime)   }

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=11" />
+<link rel="stylesheet" href="admin.css?v=12" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -144,11 +144,25 @@
           <span class="ai-compose-hint" data-bulk-hint hidden></span>
         </div>
       </div>
+      <div class="pros-filter-row">
+        <label class="pros-icp-select" data-tip="Filtra el inbox por el ICP que les asignaste al descubrir/analizar">
+          <span>Filtrar por ICP</span>
+          <select data-icp-filter="inbox"><option value="">Todos los ICPs</option></select>
+        </label>
+        <span class="pros-filter-count" data-pcount="sugerido">0</span>
+      </div>
       <div class="pros-list" data-pros-list="sugerido"><p class="admin-loading" data-pros-loading>Cargando prospectos…</p></div>
     </div>
 
     <!-- PIPELINE: aprobados, contactados, seguimientos, respondieron -->
     <div class="pview" data-pview-section="pipeline" hidden>
+      <div class="pros-filter-row">
+        <label class="pros-icp-select" data-tip="Filtra el pipeline por el ICP de cada prospecto">
+          <span>Filtrar por ICP</span>
+          <select data-icp-filter="pipeline"><option value="">Todos los ICPs</option></select>
+        </label>
+        <span class="pros-filter-count" data-pcount="pipeline">0</span>
+      </div>
       <div class="pros-pipeline-tabs">
         <button type="button" class="filter-btn active" data-pstatus="aprobado"      data-tip="Aprobados, listos para contactar manualmente por LinkedIn / email">Aprobados</button>
         <button type="button" class="filter-btn"        data-pstatus="contactado"    data-tip="Ya enviaste el primer mensaje; espera respuesta antes del follow-up">Contactados</button>
@@ -954,8 +968,10 @@ supabase
 let prospects     = [];
 let icps          = [];
 let prospectsLoaded = false;
-let currentPview  = 'inbox';
+let currentPview   = 'inbox';
 let currentPStatus = 'aprobado';
+let currentInboxIcp    = '';
+let currentPipelineIcp = '';
 
 const PROSPECT_STATUS_LABEL = {
   sugerido:      'Sugerido',
@@ -995,17 +1011,42 @@ async function loadProspects(){
   if (iRes.error) { console.error(iRes.error); return; }
   prospects = pRes.data || [];
   icps      = iRes.data || [];
-  // populate ICP select
-  const sel = $('[data-bulk-icp]');
-  if (sel) sel.innerHTML = '<option value="">(sin asignar)</option>' + icps.filter(i => i.active).map(i =>
+  // populate ICP selects
+  const bulk = $('[data-bulk-icp]');
+  if (bulk) bulk.innerHTML = '<option value="">(sin asignar)</option>' + icps.filter(i => i.active).map(i =>
     `<option value="${i.id}">${escapeHtml(i.name)}</option>`).join('');
+  // Filter selects (preserve current selection)
+  $$('[data-icp-filter]').forEach(sel => {
+    const scope = sel.dataset.icpFilter;
+    const current = scope === 'inbox' ? currentInboxIcp : currentPipelineIcp;
+    const usedIds = new Set(prospects.filter(p => p.icp_id).map(p => p.icp_id));
+    const opts = icps
+      .filter(i => usedIds.has(i.id))
+      .map(i => `<option value="${i.id}"${current === i.id ? ' selected' : ''}>${escapeHtml(i.name)}</option>`)
+      .join('');
+    const noneOpt = prospects.some(p => !p.icp_id) ? `<option value="__none__"${current === '__none__' ? ' selected' : ''}>(sin ICP)</option>` : '';
+    sel.innerHTML = `<option value="">Todos los ICPs</option>${noneOpt}${opts}`;
+  });
   renderProspects();
 }
 
-function scoreBadge(s){
-  if (s == null) return '<span class="lead-ai-score" style="opacity:.5">—</span>';
-  const cls = s >= 70 ? 'score-hi' : s >= 40 ? 'score-mid' : 'score-lo';
-  return `<span class="lead-ai-score ${cls}">${s}</span>`;
+function applyIcpFilter(list, scope){
+  const f = scope === 'inbox' ? currentInboxIcp : currentPipelineIcp;
+  if (!f) return list;
+  if (f === '__none__') return list.filter(p => !p.icp_id);
+  return list.filter(p => p.icp_id === f);
+}
+
+function scoreBadge(p){
+  if (!p.ai_analyzed_at) return '<span class="lead-ai-score score-pending" title="Sin analizar a fondo">···</span>';
+  if (p.ai_error)        return '<span class="lead-ai-score score-err" title="Análisis falló">!</span>';
+  if (p.score == null)   return '<span class="lead-ai-score" style="opacity:.5">—</span>';
+  const cls = p.score >= 70 ? 'score-hi' : p.score >= 40 ? 'score-mid' : 'score-lo';
+  return `<span class="lead-ai-score ${cls}">${p.score}</span>`;
+}
+function icpName(id){
+  const i = icps.find(x => x.id === id);
+  return i ? i.name : null;
 }
 
 function prospectRowHtml(p, mode){
@@ -1027,14 +1068,17 @@ function prospectRowHtml(p, mode){
     </div>
   ` : '';
 
+  const isAnalyzed = !!p.ai_analyzed_at && !p.ai_error;
+  const insightLabel = isAnalyzed ? 'Insight IA' : 'Pre-análisis (descubrimiento)';
   const insightBlock = p.insight ? `
-    <div class="ai-triage" style="margin-top:14px">
+    <div class="ai-triage" style="margin-top:14px${isAnalyzed ? '' : ';opacity:.85'}">
       <div class="ai-triage-head">
-        <span class="ai-eyebrow">Insight IA</span>
-        <span class="ai-meta">${p.vertical ? escapeHtml(p.vertical) : '—'} · ${p.city ? escapeHtml(p.city) : '—'} · ${p.score ?? '—'}/100</span>
+        <span class="ai-eyebrow">${insightLabel}</span>
+        <span class="ai-meta">${p.vertical ? escapeHtml(p.vertical) : '—'} · ${p.city ? escapeHtml(p.city) : '—'} · ${isAnalyzed ? (p.score ?? '—') + '/100' : 'sin score'}</span>
       </div>
       <p class="ai-summary">${escapeHtml(p.insight)}</p>
       ${p.decision_maker_name ? `<p class="ai-summary" style="opacity:.85"><strong>${escapeHtml(p.decision_maker_name)}</strong>${p.decision_maker_role ? ' · ' + escapeHtml(p.decision_maker_role) : ''}</p>` : ''}
+      ${!isAnalyzed ? `<p class="ai-triage-hint">Pulsa <strong>Analizar con IA</strong> para que la IA visite la web, calcule el score real y genere el borrador del primer mensaje.</p>` : ''}
       ${p.draft_message ? `
         <div class="ai-draft">
           <div class="ai-draft-head">
@@ -1052,10 +1096,9 @@ function prospectRowHtml(p, mode){
   // Actions per stage
   let actions = '';
   if (p.status === 'sugerido') {
-    actions = `
-      ${p.insight ? `<button type="button" class="ai-mini ai-mini-primary" data-pros-action="approve" data-pid="${idAttr}" data-tip="Aprueba este prospecto y muévelo al pipeline 'En curso'">${ICONS.check}<span>Aprobar</span></button>` : `<button type="button" class="ai-mini" data-pros-action="analyze" data-pid="${idAttr}" data-tip="Llama al agente IA para investigar esta web (~30s)">${ICONS.sparkle}<span>Analizar con IA</span></button>`}
-      <button type="button" class="ai-mini" data-pros-action="discard" data-pid="${idAttr}" data-tip="Marca este prospecto como descartado (no encaja)">Descartar</button>
-    `;
+    const analyzeBtn = `<button type="button" class="ai-mini${isAnalyzed ? '' : ' ai-mini-primary'}" data-pros-action="${isAnalyzed ? 'reanalyze' : 'analyze'}" data-pid="${idAttr}" data-tip="${isAnalyzed ? 'Re-ejecuta el análisis IA con la web actual' : 'Llama al agente IA: visita la web, calcula score real, genera borrador (~30s, ~$0.03)'}">${ICONS.sparkle}<span>${isAnalyzed ? 'Re-analizar' : 'Analizar con IA'}</span></button>`;
+    const approveBtn = isAnalyzed ? `<button type="button" class="ai-mini ai-mini-primary" data-pros-action="approve" data-pid="${idAttr}" data-tip="Aprueba este prospecto y muévelo al pipeline 'En curso'">${ICONS.check}<span>Aprobar</span></button>` : `<button type="button" class="ai-mini" data-pros-action="approve" data-pid="${idAttr}" data-tip="Aprueba sin análisis profundo (no recomendado: el draft estará vacío)">Aprobar sin analizar</button>`;
+    actions = `${analyzeBtn}${approveBtn}<button type="button" class="ai-mini" data-pros-action="discard" data-pid="${idAttr}" data-tip="Marca este prospecto como descartado (no encaja)">Descartar</button>`;
   } else if (p.status === 'aprobado') {
     actions = `
       <button type="button" class="ai-mini ai-mini-primary" data-pros-action="mark-contacted" data-pid="${idAttr}" data-tip="Pulsa después de mandar tú el primer mensaje (LinkedIn DM, email)">${ICONS.check}<span>Marcar como contactado</span></button>
@@ -1081,6 +1124,12 @@ function prospectRowHtml(p, mode){
   const openLink = `<a class="ai-mini" href="${p.url || ('https://' + p.domain)}" target="_blank" rel="noopener" data-tip="Abre la web del prospecto en una pestaña nueva">${ICONS.ext}<span>Ver web</span></a>`;
   const deleteBtn = `<button type="button" class="ai-mini" data-pros-action="delete" data-pid="${idAttr}" style="color:var(--magenta);border-color:rgba(255,61,127,.3)" data-tip="Elimina permanentemente este prospecto">Eliminar</button>`;
 
+  const icpTag = (() => {
+    const n = icpName(p.icp_id);
+    return n
+      ? `<span class="lead-icp-tag" data-tip="ICP asociado: ${escapeAttr(n)}">${escapeHtml(n)}</span>`
+      : `<span class="lead-icp-tag lead-icp-none" data-tip="Sin ICP asignado">—</span>`;
+  })();
   return `
     <article class="lead" data-pid="${idAttr}" data-estado="${p.status}">
       <button type="button" class="lead-row" data-pros-toggle aria-expanded="false" data-tip="Click para expandir y ver insight + acciones">
@@ -1088,8 +1137,9 @@ function prospectRowHtml(p, mode){
         <span class="lead-date">${relativeTime(p.created_at)}</span>
         <span class="lead-name">${escapeHtml(p.company_name || p.domain)}</span>
         <span class="lead-phone-inline">${escapeHtml(p.domain)}</span>
-        <span class="lead-msg-preview">${escapeHtml((p.insight || '(sin analizar)').slice(0, 100))}</span>
-        ${scoreBadge(p.score)}
+        ${icpTag}
+        <span class="lead-msg-preview">${escapeHtml((p.insight || '(sin analizar)').slice(0, 90))}</span>
+        ${scoreBadge(p)}
         <span class="lead-chevron" aria-hidden="true">›</span>
       </button>
       <div class="lead-body" hidden>
@@ -1109,18 +1159,24 @@ function prospectRowHtml(p, mode){
 
 function renderProspects(){
   if (currentPview === 'inbox') {
-    const list = prospects.filter(p => p.status === 'sugerido');
+    const base = prospects.filter(p => p.status === 'sugerido');
+    const list = applyIcpFilter(base, 'inbox');
     const html = list.length
       ? list.map(p => prospectRowHtml(p, 'inbox')).join('')
-      : '<p class="metrics-empty" style="padding:20px">Sin prospectos pendientes. Pega dominios arriba para empezar, o descubre con un ICP.</p>';
+      : `<p class="metrics-empty" style="padding:20px">${base.length ? 'Ningún prospecto en este ICP. Cambia el filtro o descubre nuevos.' : 'Sin prospectos pendientes. Pega dominios arriba para empezar, o descubre con un ICP.'}</p>`;
     $('[data-pros-list="sugerido"]').innerHTML = html;
+    const cnt = $('[data-pcount="sugerido"]');
+    if (cnt) cnt.textContent = list.length + (list.length === base.length ? '' : ' / ' + base.length);
     wireProspectRows($('[data-pros-list="sugerido"]'));
   } else if (currentPview === 'pipeline') {
-    const list = prospects.filter(p => p.status === currentPStatus);
+    const base = prospects.filter(p => p.status === currentPStatus);
+    const list = applyIcpFilter(base, 'pipeline');
     const html = list.length
       ? list.map(p => prospectRowHtml(p, 'pipeline')).join('')
-      : '<p class="metrics-empty" style="padding:20px">Sin prospectos en este estado.</p>';
+      : `<p class="metrics-empty" style="padding:20px">${base.length ? 'Ningún prospecto en este ICP para este estado.' : 'Sin prospectos en este estado.'}</p>`;
     $('[data-pros-list="pipeline"]').innerHTML = html;
+    const cnt = $('[data-pcount="pipeline"]');
+    if (cnt) cnt.textContent = list.length + (list.length === base.length ? '' : ' / ' + base.length);
     wireProspectRows($('[data-pros-list="pipeline"]'));
   } else if (currentPview === 'icps') {
     renderIcps();
@@ -1257,6 +1313,15 @@ $$('[data-pstatus]').forEach(btn => {
   btn.addEventListener('click', () => {
     currentPStatus = btn.dataset.pstatus;
     $$('[data-pstatus]').forEach(b => b.classList.toggle('active', b === btn));
+    renderProspects();
+  });
+});
+
+// ICP filter selects
+$$('[data-icp-filter]').forEach(sel => {
+  sel.addEventListener('change', () => {
+    if (sel.dataset.icpFilter === 'inbox') currentInboxIcp = sel.value;
+    else currentPipelineIcp = sel.value;
     renderProspects();
   });
 });
