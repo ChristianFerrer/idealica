@@ -736,3 +736,124 @@ button{font-family:inherit;cursor:pointer}
   .ai-triage,.ai-draft,.ai-variant{padding:12px}
   .ai-triage-head,.ai-draft-head,.ai-variant-head{flex-direction:column;align-items:flex-start;gap:6px}
 }
+
+/* ========= MÉTRICAS ========= */
+.metrics-head{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
+  padding:30px 26px 18px;flex-wrap:wrap;
+}
+.metrics-title{
+  font-family:'Instrument Serif',serif;font-weight:400;
+  font-size:32px;letter-spacing:-.02em;margin:0;color:var(--ink);
+}
+.metrics-note{margin:6px 0 0;color:var(--ink-3);font-size:13.5px;line-height:1.5;max-width:560px}
+.metrics-period{display:inline-flex;gap:4px;background:var(--bg-3);border:1px solid var(--line-2);border-radius:999px;padding:3px}
+.period-btn{
+  padding:6px 14px;border-radius:999px;border:0;
+  background:transparent;color:var(--ink-3);
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;font-weight:600;cursor:pointer;transition:.15s;
+}
+.period-btn:hover{color:var(--ink-2)}
+.period-btn.active{background:var(--ink);color:var(--lime)}
+
+.metrics-funnel{
+  display:flex;flex-direction:column;gap:10px;
+  padding:0 26px 24px;
+}
+.funnel-step{
+  background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;
+  padding:14px 16px;
+}
+.funnel-step-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  margin-bottom:8px;flex-wrap:wrap;
+}
+.funnel-label{
+  font-size:13.5px;color:var(--ink);font-weight:500;
+  display:inline-flex;align-items:baseline;gap:8px;
+}
+.funnel-hint{
+  font-style:normal;font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+.funnel-num{
+  font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;
+  color:var(--ink);letter-spacing:-.01em;
+}
+.funnel-bar{
+  height:6px;border-radius:3px;background:var(--bg-3);overflow:hidden;
+  position:relative;
+}
+.funnel-bar::after{
+  content:"";position:absolute;left:0;top:0;bottom:0;
+  width:var(--w,0);background:linear-gradient(90deg,var(--lime),var(--cobalt));
+  border-radius:3px;transition:width .4s ease;
+}
+.funnel-conv{
+  margin-top:8px;display:flex;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--ink-3);letter-spacing:.04em;
+}
+.funnel-dot{opacity:.5}
+
+.metrics-grid{
+  display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;
+  padding:0 26px 30px;
+}
+.metrics-card{
+  background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;
+  padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-height:170px;
+}
+.metrics-card-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+}
+.metrics-eyebrow{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:600;
+}
+.metrics-sub{
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);
+}
+.metrics-empty{margin:0;font-size:12.5px;color:var(--ink-3);font-style:italic}
+
+.spark-wrap{display:flex;flex-direction:column;gap:6px;flex:1}
+.spark-svg{width:100%;height:90px;display:block}
+.spark-area{fill:rgba(212,255,58,.12);stroke:none}
+.spark-line{fill:none;stroke:var(--lime);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.spark-dots circle{fill:var(--lime);opacity:.7}
+.spark-axis{
+  display:flex;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;
+  color:var(--ink-3);
+}
+
+.metrics-bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{
+  display:grid;grid-template-columns:90px 1fr 44px;align-items:center;gap:10px;
+}
+.bar-label{
+  font-size:12.5px;color:var(--ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.bar-track{
+  height:8px;border-radius:4px;background:var(--bg-3);overflow:hidden;display:block;
+}
+.bar-fill{
+  display:block;height:100%;
+  background:linear-gradient(90deg,var(--cobalt),var(--lime));
+  border-radius:4px;transition:width .4s ease;
+}
+.bar-num{
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);
+  text-align:right;font-weight:600;
+}
+
+@media (max-width:900px){
+  .metrics-grid{grid-template-columns:1fr}
+  .metrics-head{padding:24px 20px 14px}
+  .metrics-funnel{padding:0 20px 20px}
+  .metrics-grid{padding:0 20px 24px}
+  .bar-row{grid-template-columns:80px 1fr 40px}
+}

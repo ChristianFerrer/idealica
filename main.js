@@ -119,6 +119,91 @@
   // ───────────────────────────────────────────────────────
   const SUPABASE_URL = 'https://tbcfglgabinazoekhcnt.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_yWCslyVmWGbmM8bherr6Vw_gHkJ4ohR';
+
+  // ───────────────────────────────────────────────────────
+  // Tracking (own table public.events). Anonymous, no PII.
+  // Skipped entirely if the visitor rejected the cookie banner.
+  // ───────────────────────────────────────────────────────
+  const TRACK_KEY = 'idealica-sid';
+  function consentOk() {
+    try { return localStorage.getItem(KEY) !== 'rejected'; } catch (_) { return true; }
+  }
+  function sessionId() {
+    try {
+      let id = sessionStorage.getItem(TRACK_KEY);
+      if (!id) {
+        id = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2)));
+        sessionStorage.setItem(TRACK_KEY, id);
+      }
+      return id;
+    } catch (_) { return null; }
+  }
+  function getQS(name) {
+    try { return new URL(location.href).searchParams.get(name) || null; } catch (_) { return null; }
+  }
+  const trackedOnce = new Set();
+  function track(name, meta) {
+    if (!consentOk()) return;
+    if (name === 'form_view' || name === 'form_focus') {
+      if (trackedOnce.has(name)) return;
+      trackedOnce.add(name);
+    }
+    const body = {
+      event_name:  name,
+      page:        location.pathname + location.search,
+      lang:        document.documentElement.lang || null,
+      session_id:  sessionId(),
+      referrer:    (document.referrer || '').slice(0, 500) || null,
+      utm_source:   getQS('utm_source'),
+      utm_medium:   getQS('utm_medium'),
+      utm_campaign: getQS('utm_campaign'),
+      user_agent:  (navigator.userAgent || '').slice(0, 500),
+      meta:        meta || {},
+    };
+    const headers = {
+      'apikey':         SUPABASE_KEY,
+      'Authorization':  'Bearer ' + SUPABASE_KEY,
+      'Content-Type':   'application/json',
+      'Prefer':         'return=minimal',
+    };
+    const payload = JSON.stringify(body);
+    // sendBeacon is fire-and-forget and survives page unload; fall back to fetch keepalive.
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: 'application/json' });
+        // sendBeacon can't set custom headers — use fetch keepalive instead so apikey gets through.
+      }
+    } catch (_) {}
+    try {
+      fetch(SUPABASE_URL + '/rest/v1/events', { method: 'POST', headers, body: payload, keepalive: true })
+        .catch(() => {});
+    } catch (_) {}
+  }
+
+  // page_view on load
+  track('page_view');
+
+  // form_view when the hero form is at least 40% visible (one-shot)
+  const formEl = $('[data-msg-form]');
+  if (formEl && 'IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.intersectionRatio >= 0.4) {
+          track('form_view');
+          obs.disconnect();
+        }
+      });
+    }, { threshold: [0, 0.25, 0.4, 0.75] });
+    obs.observe(formEl);
+  } else if (formEl) {
+    track('form_view'); // fallback for old browsers
+  }
+
+  // form_focus on first interaction with any field (one-shot)
+  if (formEl) {
+    const onFocus = () => { track('form_focus'); formEl.removeEventListener('focusin', onFocus); };
+    formEl.addEventListener('focusin', onFocus);
+  }
   const msgForm = $('[data-msg-form]');
   if (msgForm) {
     msgForm.addEventListener('submit', async (e) => {
@@ -136,6 +221,7 @@
         else phoneEl?.focus();
         return;
       }
+      track('form_submit_attempt');
       const submitBtn = msgForm.querySelector('button[type="submit"]');
       const oldHtml = submitBtn ? submitBtn.innerHTML : '';
       if (submitBtn) {
@@ -156,6 +242,7 @@
           body: JSON.stringify({ nombre: name, whatsapp: phone, mensaje: msg })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        track('lead_created', { msg_len: msg.length });
         // Clean up any prior error message
         if (errorEl) {
           errorEl.hidden = true;

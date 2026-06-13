@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=6" />
+<link rel="stylesheet" href="admin.css?v=7" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -46,6 +46,7 @@
 
   <nav class="admin-tabs" role="tablist">
     <button type="button" class="tab-btn active" data-tab="leads" role="tab">Leads</button>
+    <button type="button" class="tab-btn" data-tab="metrics" role="tab">Métricas</button>
     <button type="button" class="tab-btn" data-tab="team" role="tab">Equipo</button>
   </nav>
 
@@ -81,6 +82,39 @@
     <p class="admin-empty" data-empty hidden>Sin leads en esta vista.</p>
     <p class="admin-loading" data-loading>Cargando leads…</p>
   </main>
+  </section>
+
+  <section class="admin-section" data-section="metrics" hidden>
+    <header class="metrics-head">
+      <div>
+        <h2 class="metrics-title">Métricas</h2>
+        <p class="metrics-note">¿Está llegando gente a la web y al formulario? Datos en bruto desde la propia base, sin terceros.</p>
+      </div>
+      <div class="metrics-period" role="tablist">
+        <button type="button" class="period-btn" data-period="1">24h</button>
+        <button type="button" class="period-btn active" data-period="7">7d</button>
+        <button type="button" class="period-btn" data-period="30">30d</button>
+      </div>
+    </header>
+
+    <div class="metrics-funnel" data-funnel>
+      <p class="admin-loading" data-metrics-loading>Cargando métricas…</p>
+    </div>
+
+    <div class="metrics-grid" data-metrics-grid hidden>
+      <article class="metrics-card">
+        <header class="metrics-card-head"><span class="metrics-eyebrow">Tráfico por día</span><span class="metrics-sub" data-spark-total></span></header>
+        <div class="spark-wrap" data-sparkline></div>
+      </article>
+      <article class="metrics-card">
+        <header class="metrics-card-head"><span class="metrics-eyebrow">Por idioma</span></header>
+        <div class="metrics-bars" data-by-lang></div>
+      </article>
+      <article class="metrics-card">
+        <header class="metrics-card-head"><span class="metrics-eyebrow">Top fuentes</span></header>
+        <div class="metrics-bars" data-by-ref></div>
+      </article>
+    </div>
   </section>
 
   <section class="admin-section" data-section="team" hidden>
@@ -681,9 +715,184 @@ $$('[data-tab]').forEach(btn => {
     const tab = btn.dataset.tab;
     $$('[data-tab]').forEach(b => b.classList.toggle('active', b === btn));
     $$('[data-section]').forEach(s => { s.hidden = (s.dataset.section !== tab); });
-    if (tab === 'team' && !teamLoaded) loadTeam();
+    if (tab === 'team'    && !teamLoaded)    loadTeam();
+    if (tab === 'metrics' && !metricsLoaded) loadMetrics();
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// METRICS
+// ─────────────────────────────────────────────────────────────
+let metricsLoaded = false;
+let metricsPeriod = 7;
+
+const FUNNEL_STEPS = [
+  { key: 'page_view',           label: 'Visitas',            hint: 'sesiones únicas' },
+  { key: 'form_view',           label: 'Vieron formulario',  hint: '≥40% visible' },
+  { key: 'form_focus',          label: 'Tocaron formulario', hint: 'primer focus' },
+  { key: 'form_submit_attempt', label: 'Intentaron enviar',  hint: 'click en enviar' },
+  { key: 'lead_created',        label: 'Leads',              hint: 'guardados en BD' },
+];
+
+const LANG_LABEL = { es:'Español', en:'English', de:'Deutsch', fr:'Français' };
+
+function pct(n, d){ if (!d) return '—'; return Math.round((n/d) * 1000) / 10 + '%'; }
+function fmt(n){ return Number(n || 0).toLocaleString('es-ES'); }
+
+async function loadMetrics(){
+  metricsLoaded = true;
+  const since = new Date(Date.now() - metricsPeriod * 86400000).toISOString();
+  const { data, error } = await supabase
+    .from('events')
+    .select('event_name, page, lang, session_id, referrer, created_at')
+    .gte('created_at', since)
+    .order('created_at', { ascending: true })
+    .limit(50000);
+  if (error) {
+    console.error('[metrics] failed', error);
+    $('[data-metrics-loading]').textContent = 'Error: ' + error.message;
+    return;
+  }
+  renderMetrics(data || []);
+}
+
+function renderMetrics(rows){
+  $('[data-metrics-loading]').hidden = true;
+  $('[data-metrics-grid]').hidden    = false;
+
+  // Funnel: unique sessions per step
+  const sessionsByStep = {};
+  FUNNEL_STEPS.forEach(s => sessionsByStep[s.key] = new Set());
+  rows.forEach(r => {
+    if (r.session_id && sessionsByStep[r.event_name]) sessionsByStep[r.event_name].add(r.session_id);
+  });
+  const counts = FUNNEL_STEPS.map(s => sessionsByStep[s.key].size);
+  const topCount = counts[0] || 1;
+
+  const funnelHtml = FUNNEL_STEPS.map((s, i) => {
+    const n      = counts[i];
+    const widthN = Math.max(8, Math.round((n / topCount) * 100));
+    const fromPrev = i === 0 ? null : pct(n, counts[i - 1]);
+    const fromTop  = i === 0 ? null : pct(n, counts[0]);
+    return `
+      <div class="funnel-step">
+        <div class="funnel-step-head">
+          <span class="funnel-label">${s.label}<em class="funnel-hint">${s.hint}</em></span>
+          <span class="funnel-num">${fmt(n)}</span>
+        </div>
+        <div class="funnel-bar" style="--w:${widthN}%"></div>
+        ${i > 0 ? `<div class="funnel-conv"><span>${fromPrev} desde paso anterior</span><span class="funnel-dot">·</span><span>${fromTop} desde visita</span></div>` : ''}
+      </div>
+    `;
+  }).join('');
+  $('[data-funnel]').innerHTML = funnelHtml;
+
+  // Daily sparkline of page_views
+  const days = metricsPeriod <= 1 ? 24 : metricsPeriod; // hours for 24h view
+  const bucket = metricsPeriod <= 1 ? 3600000 : 86400000;
+  const now = Date.now();
+  const buckets = new Array(days).fill(0);
+  rows.forEach(r => {
+    if (r.event_name !== 'page_view') return;
+    const t = new Date(r.created_at).getTime();
+    const idx = Math.floor((t - (now - days * bucket)) / bucket);
+    if (idx >= 0 && idx < days) buckets[idx]++;
+  });
+  const total   = buckets.reduce((a,b)=>a+b, 0);
+  const maxV    = Math.max(...buckets, 1);
+  const W = 320, H = 80, P = 6;
+  const dx = days > 1 ? (W - 2*P) / (days - 1) : 0;
+  const points = buckets.map((v, i) => {
+    const x = P + i * dx;
+    const y = H - P - (v / maxV) * (H - 2*P);
+    return [x, y, v];
+  });
+  const linePath = points.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const areaPath = linePath + ` L ${P + (days-1)*dx} ${H - P} L ${P} ${H - P} Z`;
+  const dotsHtml = points.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.5"/>`).join('');
+  $('[data-sparkline]').innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="spark-svg" role="img" aria-label="Page views por ${metricsPeriod <= 1 ? 'hora' : 'día'}">
+      <path d="${areaPath}" class="spark-area"/>
+      <path d="${linePath}" class="spark-line"/>
+      <g class="spark-dots">${dotsHtml}</g>
+    </svg>
+    <div class="spark-axis">
+      <span>${metricsPeriod <= 1 ? 'hace 24h' : 'hace ' + metricsPeriod + 'd'}</span>
+      <span>ahora</span>
+    </div>
+  `;
+  $('[data-spark-total]').textContent = fmt(total) + ' visitas';
+
+  // By language (page_view sessions only)
+  const langSessions = {};
+  rows.forEach(r => {
+    if (r.event_name !== 'page_view' || !r.session_id) return;
+    const k = r.lang || '?';
+    if (!langSessions[k]) langSessions[k] = new Set();
+    langSessions[k].add(r.session_id);
+  });
+  const langRows = Object.entries(langSessions)
+    .map(([k, set]) => [k, set.size])
+    .sort((a,b) => b[1] - a[1]);
+  const langMax  = Math.max(...langRows.map(r => r[1]), 1);
+  $('[data-by-lang]').innerHTML = langRows.length
+    ? langRows.map(([k, n]) => `
+        <div class="bar-row">
+          <span class="bar-label">${escapeHtml(LANG_LABEL[k] || k)}</span>
+          <span class="bar-track"><span class="bar-fill" style="width:${Math.max(4, Math.round((n/langMax)*100))}%"></span></span>
+          <span class="bar-num">${fmt(n)}</span>
+        </div>
+      `).join('')
+    : '<p class="metrics-empty">Sin datos.</p>';
+
+  // Top referrers (page_view sessions)
+  const refSessions = {};
+  rows.forEach(r => {
+    if (r.event_name !== 'page_view' || !r.session_id) return;
+    let host = 'directo';
+    if (r.referrer) {
+      try { host = new URL(r.referrer).hostname.replace(/^www\./, ''); } catch (_) {}
+    }
+    // exclude self-referrals
+    if (host.endsWith('idealica.vercel.app') || host === 'idealica.com') host = 'directo';
+    if (!refSessions[host]) refSessions[host] = new Set();
+    refSessions[host].add(r.session_id);
+  });
+  const refRows = Object.entries(refSessions)
+    .map(([k, set]) => [k, set.size])
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 8);
+  const refMax = Math.max(...refRows.map(r => r[1]), 1);
+  $('[data-by-ref]').innerHTML = refRows.length
+    ? refRows.map(([k, n]) => `
+        <div class="bar-row">
+          <span class="bar-label">${escapeHtml(k)}</span>
+          <span class="bar-track"><span class="bar-fill" style="width:${Math.max(4, Math.round((n/refMax)*100))}%"></span></span>
+          <span class="bar-num">${fmt(n)}</span>
+        </div>
+      `).join('')
+    : '<p class="metrics-empty">Sin datos.</p>';
+}
+
+$$('[data-period]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    metricsPeriod = Number(btn.dataset.period);
+    $$('[data-period]').forEach(b => b.classList.toggle('active', b === btn));
+    $('[data-metrics-loading]').hidden = false;
+    $('[data-metrics-loading]').textContent = 'Cargando métricas…';
+    $('[data-metrics-grid]').hidden = true;
+    loadMetrics();
+  });
+});
+
+// Realtime for events — refresh metrics tab if currently visible
+supabase
+  .channel('events-changes')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, () => {
+    const metricsSection = $('[data-section="metrics"]');
+    if (metricsSection && !metricsSection.hidden && metricsLoaded) loadMetrics();
+  })
+  .subscribe();
 
 // Realtime: when profiles change anywhere, refresh the team grid
 supabase
