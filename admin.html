@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=8" />
+<link rel="stylesheet" href="admin.css?v=9" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -40,43 +40,43 @@
     <div class="admin-brand"><span class="star"></span>Idealica · CRM</div>
     <div class="admin-header-right">
       <span class="admin-user" data-user-email></span>
-      <button type="button" class="admin-btn-text" data-logout>Salir</button>
+      <button type="button" class="admin-btn-text" data-logout data-tip="Cierra tu sesión en el CRM">Salir</button>
     </div>
   </header>
 
   <nav class="admin-tabs" role="tablist">
-    <button type="button" class="tab-btn active" data-tab="leads" role="tab">Leads</button>
-    <button type="button" class="tab-btn" data-tab="prospects" role="tab">Prospectos</button>
-    <button type="button" class="tab-btn" data-tab="metrics" role="tab">Métricas</button>
-    <button type="button" class="tab-btn" data-tab="team" role="tab">Equipo</button>
+    <button type="button" class="tab-btn active" data-tab="leads"     role="tab" data-tip="Leads que entraron por el formulario de la web. Triage IA automático.">Leads</button>
+    <button type="button" class="tab-btn"        data-tab="prospects" role="tab" data-tip="Outbound: tú decides, la IA investiga. Pega dominios o descubre por ICP.">Prospectos</button>
+    <button type="button" class="tab-btn"        data-tab="metrics"   role="tab" data-tip="Funnel del tráfico de la web: visitas → formulario → leads.">Métricas</button>
+    <button type="button" class="tab-btn"        data-tab="team"      role="tab" data-tip="Miembros del equipo y configuración de quién recibe notificaciones.">Equipo</button>
   </nav>
 
   <section class="admin-section" data-section="leads">
   <section class="admin-stats">
-    <button type="button" class="stat" data-stat="pendiente">
+    <button type="button" class="stat" data-stat="pendiente"  data-tip="Click para filtrar solo los leads pendientes de contactar">
       <span class="stat-num" data-count="pendiente">0</span>
       <span class="stat-label">Pendientes</span>
     </button>
-    <button type="button" class="stat" data-stat="contactado">
+    <button type="button" class="stat" data-stat="contactado" data-tip="Leads ya contactados, esperando respuesta o avance">
       <span class="stat-num" data-count="contactado">0</span>
       <span class="stat-label">Contactados</span>
     </button>
-    <button type="button" class="stat" data-stat="cerrado">
+    <button type="button" class="stat" data-stat="cerrado"    data-tip="Leads que terminaron en cliente o cierre exitoso">
       <span class="stat-num" data-count="cerrado">0</span>
       <span class="stat-label">Cerrados</span>
     </button>
-    <button type="button" class="stat" data-stat="descartado">
+    <button type="button" class="stat" data-stat="descartado" data-tip="Leads que no encajaban o que tú decidiste no perseguir">
       <span class="stat-num" data-count="descartado">0</span>
       <span class="stat-label">Descartados</span>
     </button>
   </section>
 
   <nav class="admin-filters" role="tablist">
-    <button type="button" class="filter-btn active" data-filter="all">Todos<span class="filter-count" data-count="all">0</span></button>
-    <button type="button" class="filter-btn" data-filter="pendiente">Pendientes</button>
-    <button type="button" class="filter-btn" data-filter="contactado">Contactados</button>
-    <button type="button" class="filter-btn" data-filter="cerrado">Cerrados</button>
-    <button type="button" class="filter-btn" data-filter="descartado">Descartados</button>
+    <button type="button" class="filter-btn active" data-filter="all"        data-tip="Mostrar todos los leads sin filtrar">Todos<span class="filter-count" data-count="all">0</span></button>
+    <button type="button" class="filter-btn"        data-filter="pendiente"  data-tip="Solo pendientes">Pendientes</button>
+    <button type="button" class="filter-btn"        data-filter="contactado" data-tip="Solo contactados">Contactados</button>
+    <button type="button" class="filter-btn"        data-filter="cerrado"    data-tip="Solo cerrados">Cerrados</button>
+    <button type="button" class="filter-btn"        data-filter="descartado" data-tip="Solo descartados">Descartados</button>
   </nav>
 
   <main class="admin-leads" data-leads>
@@ -92,26 +92,26 @@
         <p class="metrics-note">¿Está llegando gente a la web y al formulario? Datos en bruto desde la propia base, sin terceros.</p>
       </div>
       <div class="metrics-period" role="tablist">
-        <button type="button" class="period-btn" data-period="1">24h</button>
-        <button type="button" class="period-btn active" data-period="7">7d</button>
-        <button type="button" class="period-btn" data-period="30">30d</button>
+        <button type="button" class="period-btn"        data-period="1"  data-tip="Tráfico por hora en las últimas 24h">24h</button>
+        <button type="button" class="period-btn active" data-period="7"  data-tip="Tráfico por día en los últimos 7 días">7d</button>
+        <button type="button" class="period-btn"        data-period="30" data-tip="Tráfico por día en los últimos 30 días">30d</button>
       </div>
     </header>
 
-    <div class="metrics-funnel" data-funnel>
+    <div class="metrics-funnel" data-funnel data-tip="Cada paso muestra sesiones únicas y % de conversión respecto al paso anterior y al total de visitas." data-tip-pos="bottom">
       <p class="admin-loading" data-metrics-loading>Cargando métricas…</p>
     </div>
 
     <div class="metrics-grid" data-metrics-grid hidden>
-      <article class="metrics-card">
+      <article class="metrics-card" data-tip="Curva de visitas únicas por día (o por hora en vista 24h)" data-tip-pos="bottom">
         <header class="metrics-card-head"><span class="metrics-eyebrow">Tráfico por día</span><span class="metrics-sub" data-spark-total></span></header>
         <div class="spark-wrap" data-sparkline></div>
       </article>
-      <article class="metrics-card">
+      <article class="metrics-card" data-tip="Visitas únicas por versión idiomática (es/en/de/fr)" data-tip-pos="bottom">
         <header class="metrics-card-head"><span class="metrics-eyebrow">Por idioma</span></header>
         <div class="metrics-bars" data-by-lang></div>
       </article>
-      <article class="metrics-card">
+      <article class="metrics-card" data-tip="Dominios que te traen tráfico (directo, Google, LinkedIn, etc.)" data-tip-pos="bottom">
         <header class="metrics-card-head"><span class="metrics-eyebrow">Top fuentes</span></header>
         <div class="metrics-bars" data-by-ref></div>
       </article>
@@ -125,22 +125,22 @@
         <p class="metrics-note">Outbound asistido. Tú decides, la IA hace el research. Pega dominios, descubre por ICP, manda mensajes humanos.</p>
       </div>
       <div class="metrics-period" role="tablist">
-        <button type="button" class="period-btn active" data-pview="inbox">Inbox</button>
-        <button type="button" class="period-btn" data-pview="pipeline">En curso</button>
-        <button type="button" class="period-btn" data-pview="icps">ICPs</button>
+        <button type="button" class="period-btn active" data-pview="inbox"    data-tip="Prospectos nuevos sin revisar: pega dominios o úsalos desde Descubrir">Inbox</button>
+        <button type="button" class="period-btn"        data-pview="pipeline" data-tip="Pipeline de prospectos: aprobados, contactados, follow-ups y resultados">En curso</button>
+        <button type="button" class="period-btn"        data-pview="icps"     data-tip="Perfiles ideales de cliente (ICPs) que guían el descubrimiento automático">ICPs</button>
       </div>
     </header>
 
     <!-- INBOX: nuevos prospectos para revisar -->
     <div class="pview" data-pview-section="inbox">
       <div class="pros-bulk-add">
-        <textarea data-bulk-domains rows="2" placeholder="Pega 1 o varios dominios separados por coma o salto de línea (clinicaverdi.com, abogados-bcn.com)"></textarea>
+        <textarea data-bulk-domains rows="2" placeholder="Pega 1 o varios dominios separados por coma o salto de línea (clinicaverdi.com, abogados-bcn.com)" data-tip="Pega los dominios de las empresas que quieres investigar. La IA visitará cada web y generará score + insight + borrador de primer mensaje." data-tip-pos="bottom"></textarea>
         <div class="pros-bulk-controls">
-          <label class="pros-icp-select">
+          <label class="pros-icp-select" data-tip="Si asignas un ICP, la IA evaluará cada dominio contra ese perfil concreto (más afinado)">
             <span>ICP</span>
             <select data-bulk-icp><option value="">(sin asignar)</option></select>
           </label>
-          <button type="button" class="ai-compose-btn" data-bulk-analyze>Analizar dominios</button>
+          <button type="button" class="ai-compose-btn" data-bulk-analyze data-tip="Lanza el agente IA: fetch de la web + análisis con Claude por cada dominio. ~30s por dominio.">Analizar dominios</button>
           <span class="ai-compose-hint" data-bulk-hint hidden></span>
         </div>
       </div>
@@ -150,13 +150,13 @@
     <!-- PIPELINE: aprobados, contactados, seguimientos, respondieron -->
     <div class="pview" data-pview-section="pipeline" hidden>
       <div class="pros-pipeline-tabs">
-        <button type="button" class="filter-btn active" data-pstatus="aprobado">Aprobados</button>
-        <button type="button" class="filter-btn" data-pstatus="contactado">Contactados</button>
-        <button type="button" class="filter-btn" data-pstatus="seguimiento_1">Follow-up 1</button>
-        <button type="button" class="filter-btn" data-pstatus="seguimiento_2">Follow-up 2</button>
-        <button type="button" class="filter-btn" data-pstatus="respondio">Respondieron</button>
-        <button type="button" class="filter-btn" data-pstatus="sin_respuesta">Sin respuesta</button>
-        <button type="button" class="filter-btn" data-pstatus="descartado">Descartados</button>
+        <button type="button" class="filter-btn active" data-pstatus="aprobado"      data-tip="Aprobados, listos para contactar manualmente por LinkedIn / email">Aprobados</button>
+        <button type="button" class="filter-btn"        data-pstatus="contactado"    data-tip="Ya enviaste el primer mensaje; espera respuesta antes del follow-up">Contactados</button>
+        <button type="button" class="filter-btn"        data-pstatus="seguimiento_1" data-tip="Día 4-7 sin respuesta: primer follow-up generado">Follow-up 1</button>
+        <button type="button" class="filter-btn"        data-pstatus="seguimiento_2" data-tip="Día 10-14 sin respuesta: último follow-up suave">Follow-up 2</button>
+        <button type="button" class="filter-btn"        data-pstatus="respondio"     data-tip="Respondieron: conversación humana en curso">Respondieron</button>
+        <button type="button" class="filter-btn"        data-pstatus="sin_respuesta" data-tip="Tras los follow-ups, sin reacción: archivar o reintentar más adelante">Sin respuesta</button>
+        <button type="button" class="filter-btn"        data-pstatus="descartado"    data-tip="Tú o la IA decidisteis que no encajaban">Descartados</button>
       </div>
       <div class="pros-list" data-pros-list="pipeline"></div>
     </div>
@@ -164,7 +164,7 @@
     <!-- ICPs -->
     <div class="pview" data-pview-section="icps" hidden>
       <div class="icp-create">
-        <button type="button" class="ai-compose-btn" data-icp-new>+ Nuevo ICP</button>
+        <button type="button" class="ai-compose-btn" data-icp-new data-tip="Crea un perfil ideal de cliente: vertical, ubicación, tamaño, señales a buscar">+ Nuevo ICP</button>
       </div>
       <div class="icp-list" data-icp-list><p class="admin-loading" data-icp-loading>Cargando ICPs…</p></div>
     </div>
@@ -330,8 +330,8 @@ function render(){
             <div class="ai-draft-head">
               <span class="ai-eyebrow">Borrador sugerido</span>
               <div class="ai-draft-actions">
-                <button type="button" class="ai-mini" data-action="copy-draft">${ICONS.copy}<span>Copiar</span></button>
-                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(l.ai_draft_reply)}" target="_blank" rel="noopener">${ICONS.ext}<span>Abrir en WhatsApp</span></a>
+                <button type="button" class="ai-mini" data-action="copy-draft" data-tip="Copia este borrador al portapapeles">${ICONS.copy}<span>Copiar</span></button>
+                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(l.ai_draft_reply)}" target="_blank" rel="noopener" data-tip="Abre WhatsApp con el borrador ya prellenado: solo revisas y envías">${ICONS.ext}<span>Abrir en WhatsApp</span></a>
               </div>
             </div>
             <p class="ai-draft-text" data-draft-text>${escapeHtml(l.ai_draft_reply)}</p>
@@ -348,8 +348,8 @@ function render(){
             <div class="ai-variant-head">
               <span class="ai-variant-label">${escapeHtml(v.label || ('Variante ' + (i+1)))}</span>
               <div class="ai-draft-actions">
-                <button type="button" class="ai-mini" data-action="copy-variant" data-variant-idx="${i}">${ICONS.copy}<span>Copiar</span></button>
-                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(v.text)}" target="_blank" rel="noopener">${ICONS.ext}<span>WhatsApp</span></a>
+                <button type="button" class="ai-mini" data-action="copy-variant" data-variant-idx="${i}" data-tip="Copia esta variante al portapapeles">${ICONS.copy}<span>Copiar</span></button>
+                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(v.text)}" target="_blank" rel="noopener" data-tip="Abre WhatsApp con esta variante prellenada">${ICONS.ext}<span>WhatsApp</span></a>
               </div>
             </div>
             <p class="ai-variant-text">${escapeHtml(v.text)}</p>
@@ -360,7 +360,7 @@ function render(){
 
     return `
     <article class="lead" data-id="${l.id}" data-estado="${l.estado}">
-      <button type="button" class="lead-row" data-toggle aria-expanded="false" aria-controls="lead-body-${l.id}">
+      <button type="button" class="lead-row" data-toggle aria-expanded="false" aria-controls="lead-body-${l.id}" data-tip="Click para expandir el lead, ver triage IA y acciones">
         <span class="lead-status-pill status-${l.estado}">${STATUS_LABEL[l.estado] || l.estado}</span>
         <span class="lead-date">${relativeTime(l.created_at)}</span>
         <span class="lead-name">${escapeHtml(l.nombre)}</span>
@@ -370,18 +370,18 @@ function render(){
         <span class="lead-chevron" aria-hidden="true">›</span>
       </button>
       <div class="lead-body" id="lead-body-${l.id}" hidden>
-        <a class="lead-wa" href="${waLink(l.whatsapp)}" target="_blank" rel="noopener">
+        <a class="lead-wa" href="${waLink(l.whatsapp)}" target="_blank" rel="noopener" data-tip="Abrir WhatsApp con este número (sin mensaje prellenado)" data-tip-pos="bottom">
           ${escapeHtml(l.whatsapp)} <span class="lead-wa-tag">${ICONS.ext}WhatsApp</span>
         </a>
         <p class="lead-msg-full">${escapeHtml(l.mensaje)}</p>
         ${triageBlock}
         <div class="ai-compose-row">
-          <button type="button" class="ai-compose-btn" data-action="compose">${ICONS.sparkle} Sugerir respuesta</button>
+          <button type="button" class="ai-compose-btn" data-action="compose" data-tip="Genera 3 variantes de respuesta con ángulos distintos (directo, consultivo, propositivo). Tarda ~10-15s.">${ICONS.sparkle} Sugerir respuesta</button>
           <span class="ai-compose-hint" data-compose-hint hidden></span>
         </div>
         ${variantsBlock}
         <div class="lead-edit">
-          <label class="lead-edit-row">
+          <label class="lead-edit-row" data-tip="Cambiar el estado mueve el lead automáticamente entre las stats de arriba">
             <span class="lead-edit-label">Estado</span>
             <select data-action="estado">
               <option value="pendiente"${l.estado==='pendiente'?' selected':''}>Pendiente</option>
@@ -390,12 +390,12 @@ function render(){
               <option value="descartado"${l.estado==='descartado'?' selected':''}>Descartado</option>
             </select>
           </label>
-          <label class="lead-edit-row">
+          <label class="lead-edit-row" data-tip="Notas visibles solo para el equipo. Se guardan automáticamente al hacer click fuera del campo.">
             <span class="lead-edit-label">Notas internas</span>
             <textarea data-action="notas" rows="2" placeholder="Añade notas internas (auto-guarda al salir)…">${escapeHtml(l.notas || '')}</textarea>
           </label>
         </div>
-        <button type="button" class="lead-delete" data-action="delete">Eliminar lead</button>
+        <button type="button" class="lead-delete" data-action="delete" data-tip="Borra el lead permanentemente (no se puede deshacer)">Eliminar lead</button>
       </div>
     </article>
   `;}).join('');
@@ -643,9 +643,9 @@ function renderTeam(){
 
     const editableHTML = canEdit ? `
       <div class="member-channels">
-        <label class="ch-toggle"><input type="checkbox" data-pref="notify_email" ${m.notify_email?'checked':''}><span>${ICONS.mail}Email</span></label>
-        <label class="ch-toggle"><input type="checkbox" data-pref="notify_whatsapp" ${m.notify_whatsapp?'checked':''}><span>${ICONS.chat}WhatsApp</span></label>
-        <label class="ch-toggle"><input type="checkbox" data-pref="notify_push" ${m.notify_push?'checked':''}><span>${ICONS.bell}Push</span></label>
+        <label class="ch-toggle" data-tip="Recibir notificaciones por email cuando entre un lead nuevo (requiere RESEND_API_KEY configurada)"><input type="checkbox" data-pref="notify_email" ${m.notify_email?'checked':''}><span>${ICONS.mail}Email</span></label>
+        <label class="ch-toggle" data-tip="Recibir notificaciones por WhatsApp (requiere configurar CallMeBot abajo)"><input type="checkbox" data-pref="notify_whatsapp" ${m.notify_whatsapp?'checked':''}><span>${ICONS.chat}WhatsApp</span></label>
+        <label class="ch-toggle" data-tip="Push notification al móvil vía ntfy.sh (requiere configurar topic abajo)"><input type="checkbox" data-pref="notify_push" ${m.notify_push?'checked':''}><span>${ICONS.bell}Push</span></label>
       </div>
       <details class="member-config">
         <summary>Datos y credenciales</summary>
@@ -689,7 +689,7 @@ function renderTeam(){
             <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
           </select>
         </label>
-        <button type="button" class="member-delete" data-action="delete">Quitar acceso al CRM</button>
+        <button type="button" class="member-delete" data-action="delete" data-tip="Borra el perfil del CRM. El usuario de Supabase Auth permanece — bórralo desde el dashboard si quieres eliminarlo del todo.">Quitar acceso al CRM</button>
       </div>
     ` : '';
 
@@ -1018,7 +1018,7 @@ function prospectRowHtml(p, mode){
           <div class="ai-variant-head">
             <span class="ai-variant-label">${escapeHtml(v.label || ('Variante ' + (i+1)))}</span>
             <div class="ai-draft-actions">
-              <button type="button" class="ai-mini" data-pros-action="copy-pvariant" data-pid="${idAttr}" data-vidx="${i}">${ICONS.copy}<span>Copiar</span></button>
+              <button type="button" class="ai-mini" data-pros-action="copy-pvariant" data-pid="${idAttr}" data-vidx="${i}" data-tip="Copia este follow-up al portapapeles">${ICONS.copy}<span>Copiar</span></button>
             </div>
           </div>
           <p class="ai-variant-text">${escapeHtml(v.text)}</p>
@@ -1040,7 +1040,7 @@ function prospectRowHtml(p, mode){
           <div class="ai-draft-head">
             <span class="ai-eyebrow">Mensaje sugerido</span>
             <div class="ai-draft-actions">
-              <button type="button" class="ai-mini" data-pros-action="copy-draft" data-pid="${idAttr}">${ICONS.copy}<span>Copiar</span></button>
+              <button type="button" class="ai-mini" data-pros-action="copy-draft" data-pid="${idAttr}" data-tip="Copia el mensaje sugerido al portapapeles">${ICONS.copy}<span>Copiar</span></button>
             </div>
           </div>
           <p class="ai-draft-text">${escapeHtml(p.draft_message)}</p>
@@ -1053,37 +1053,37 @@ function prospectRowHtml(p, mode){
   let actions = '';
   if (p.status === 'sugerido') {
     actions = `
-      ${p.insight ? `<button type="button" class="ai-mini ai-mini-primary" data-pros-action="approve" data-pid="${idAttr}">${ICONS.check}<span>Aprobar</span></button>` : `<button type="button" class="ai-mini" data-pros-action="analyze" data-pid="${idAttr}">${ICONS.sparkle}<span>Analizar con IA</span></button>`}
-      <button type="button" class="ai-mini" data-pros-action="discard" data-pid="${idAttr}">Descartar</button>
+      ${p.insight ? `<button type="button" class="ai-mini ai-mini-primary" data-pros-action="approve" data-pid="${idAttr}" data-tip="Aprueba este prospecto y muévelo al pipeline 'En curso'">${ICONS.check}<span>Aprobar</span></button>` : `<button type="button" class="ai-mini" data-pros-action="analyze" data-pid="${idAttr}" data-tip="Llama al agente IA para investigar esta web (~30s)">${ICONS.sparkle}<span>Analizar con IA</span></button>`}
+      <button type="button" class="ai-mini" data-pros-action="discard" data-pid="${idAttr}" data-tip="Marca este prospecto como descartado (no encaja)">Descartar</button>
     `;
   } else if (p.status === 'aprobado') {
     actions = `
-      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="mark-contacted" data-pid="${idAttr}">${ICONS.check}<span>Marcar como contactado</span></button>
-      <button type="button" class="ai-mini" data-pros-action="reanalyze" data-pid="${idAttr}">${ICONS.sparkle}<span>Re-analizar</span></button>
+      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="mark-contacted" data-pid="${idAttr}" data-tip="Pulsa después de mandar tú el primer mensaje (LinkedIn DM, email)">${ICONS.check}<span>Marcar como contactado</span></button>
+      <button type="button" class="ai-mini" data-pros-action="reanalyze" data-pid="${idAttr}" data-tip="Re-ejecuta el análisis IA (útil si actualizaste el ICP)">${ICONS.sparkle}<span>Re-analizar</span></button>
     `;
   } else if (p.status === 'contactado') {
     actions = `
-      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="followup-1" data-pid="${idAttr}">${ICONS.sparkle}<span>Generar follow-up</span></button>
-      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}">Marcar respondido</button>
+      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="followup-1" data-pid="${idAttr}" data-tip="Genera 3 variantes de follow-up con un ángulo nuevo (~10-15s)">${ICONS.sparkle}<span>Generar follow-up</span></button>
+      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}" data-tip="Marca que el prospecto respondió: conversación en curso">Marcar respondido</button>
     `;
   } else if (p.status === 'seguimiento_1') {
     actions = `
-      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="followup-2" data-pid="${idAttr}">${ICONS.sparkle}<span>Generar último follow-up</span></button>
-      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}">Marcar respondido</button>
+      <button type="button" class="ai-mini ai-mini-primary" data-pros-action="followup-2" data-pid="${idAttr}" data-tip="Último follow-up suave (tono 'sin problema si no es prioridad')">${ICONS.sparkle}<span>Generar último follow-up</span></button>
+      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}" data-tip="Marca que el prospecto respondió">Marcar respondido</button>
     `;
   } else if (p.status === 'seguimiento_2') {
     actions = `
-      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}">Marcar respondido</button>
-      <button type="button" class="ai-mini" data-pros-action="mark-noreply" data-pid="${idAttr}">Sin respuesta</button>
+      <button type="button" class="ai-mini" data-pros-action="mark-replied" data-pid="${idAttr}" data-tip="Marca que el prospecto respondió">Marcar respondido</button>
+      <button type="button" class="ai-mini" data-pros-action="mark-noreply" data-pid="${idAttr}" data-tip="Cierra el ciclo: tras 2 follow-ups, no hay reacción">Sin respuesta</button>
     `;
   }
   // Common: open website + delete
-  const openLink = `<a class="ai-mini" href="${p.url || ('https://' + p.domain)}" target="_blank" rel="noopener">${ICONS.ext}<span>Ver web</span></a>`;
-  const deleteBtn = `<button type="button" class="ai-mini" data-pros-action="delete" data-pid="${idAttr}" style="color:var(--magenta);border-color:rgba(255,61,127,.3)">Eliminar</button>`;
+  const openLink = `<a class="ai-mini" href="${p.url || ('https://' + p.domain)}" target="_blank" rel="noopener" data-tip="Abre la web del prospecto en una pestaña nueva">${ICONS.ext}<span>Ver web</span></a>`;
+  const deleteBtn = `<button type="button" class="ai-mini" data-pros-action="delete" data-pid="${idAttr}" style="color:var(--magenta);border-color:rgba(255,61,127,.3)" data-tip="Elimina permanentemente este prospecto">Eliminar</button>`;
 
   return `
     <article class="lead" data-pid="${idAttr}" data-estado="${p.status}">
-      <button type="button" class="lead-row" data-pros-toggle aria-expanded="false">
+      <button type="button" class="lead-row" data-pros-toggle aria-expanded="false" data-tip="Click para expandir y ver insight + acciones">
         <span class="lead-status-pill status-${p.status}">${PROSPECT_STATUS_LABEL[p.status] || p.status}</span>
         <span class="lead-date">${relativeTime(p.created_at)}</span>
         <span class="lead-name">${escapeHtml(p.company_name || p.domain)}</span>
@@ -1097,7 +1097,7 @@ function prospectRowHtml(p, mode){
         ${variantsBlock}
         <div class="ai-compose-row" style="margin-top:14px">${actions}${openLink}${deleteBtn}</div>
         <div class="lead-edit" style="margin-top:14px">
-          <label class="lead-edit-row">
+          <label class="lead-edit-row" data-tip="Notas internas. Se guardan al hacer click fuera del campo.">
             <span class="lead-edit-label">Notas</span>
             <textarea data-pros-notes data-pid="${idAttr}" rows="2" placeholder="Notas internas (auto-guarda al salir)…">${escapeHtml(p.notes || '')}</textarea>
           </label>
@@ -1284,15 +1284,15 @@ function renderIcps(){
             <h3 class="icp-name">${escapeHtml(i.name)}</h3>
             <p class="icp-meta">${escapeHtml(i.vertical || '—')} · ${escapeHtml(i.location || 'sin ubicación')} · ${count} prospectos</p>
           </div>
-          <label class="ch-toggle"><input type="checkbox" data-icp-active ${i.active ? 'checked' : ''}><span>Activo</span></label>
+          <label class="ch-toggle" data-tip="Si está inactivo, no aparecerá en el selector del Inbox ni se usará para descubrir"><input type="checkbox" data-icp-active ${i.active ? 'checked' : ''}><span>Activo</span></label>
         </header>
         <p class="icp-desc">${escapeHtml(i.description)}</p>
         ${i.signals ? `<p class="icp-signals"><strong>Señales:</strong> ${escapeHtml(i.signals)}</p>` : ''}
         ${i.examples ? `<p class="icp-signals"><strong>Ejemplos:</strong> ${escapeHtml(i.examples)}</p>` : ''}
         <div class="ai-compose-row" style="margin-top:14px">
-          <button type="button" class="ai-compose-btn" data-icp-discover>${ICONS.sparkle}<span>Descubrir prospectos</span></button>
-          <button type="button" class="ai-mini" data-icp-edit>Editar</button>
-          <button type="button" class="ai-mini" data-icp-delete style="color:var(--magenta);border-color:rgba(255,61,127,.3)">Eliminar</button>
+          <button type="button" class="ai-compose-btn" data-icp-discover data-tip="El agente IA busca en la web ~8 empresas reales que matchean este ICP. Tarda 40-90s.">${ICONS.sparkle}<span>Descubrir prospectos</span></button>
+          <button type="button" class="ai-mini" data-icp-edit   data-tip="Edita los campos del ICP">Editar</button>
+          <button type="button" class="ai-mini" data-icp-delete style="color:var(--magenta);border-color:rgba(255,61,127,.3)" data-tip="Elimina este ICP. Los prospectos ya creados se conservan.">Eliminar</button>
           <span class="ai-compose-hint" data-icp-hint hidden></span>
         </div>
       </article>

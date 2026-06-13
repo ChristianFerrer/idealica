@@ -984,3 +984,82 @@ button{font-family:inherit;cursor:pointer}
   .icp-list{grid-template-columns:1fr}
   .icp-modal-row{grid-template-columns:1fr}
 }
+
+/* ========= TOOLTIPS =========
+   Add data-tip="texto" to any element. Bubble appears on hover/focus with
+   a small delay. Disabled on touch (hover:none) and reduced motion. */
+[data-tip]{position:relative}
+[data-tip]::after{
+  content:attr(data-tip);
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;
+  transform:translateX(-50%) translateY(4px);
+  background:var(--ink);
+  color:var(--lime);
+  padding:7px 11px;
+  border-radius:7px;
+  border:1px solid rgba(212,255,58,.2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;line-height:1.4;letter-spacing:.02em;
+  text-transform:none;font-weight:500;
+  width:max-content;max-width:min(260px,80vw);
+  text-align:center;white-space:normal;
+  pointer-events:none;
+  z-index:200;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+  opacity:0;visibility:hidden;
+  transition:opacity .18s ease .35s, transform .18s ease .35s, visibility 0s linear .55s;
+}
+[data-tip]::before{
+  content:"";
+  position:absolute;
+  bottom:calc(100% + 2px);
+  left:50%;
+  transform:translateX(-50%) translateY(4px);
+  border:6px solid transparent;
+  border-top-color:var(--ink);
+  z-index:200;pointer-events:none;
+  opacity:0;visibility:hidden;
+  transition:opacity .18s ease .35s, transform .18s ease .35s, visibility 0s linear .55s;
+}
+[data-tip]:hover::after,
+[data-tip]:hover::before,
+[data-tip]:focus-visible::after,
+[data-tip]:focus-visible::before{
+  opacity:1;visibility:visible;
+  transform:translateX(-50%) translateY(0);
+  transition-delay:.35s, .35s, 0s;
+}
+/* Position variants */
+[data-tip][data-tip-pos="bottom"]::after{ bottom:auto; top:calc(100% + 8px); }
+[data-tip][data-tip-pos="bottom"]::before{ bottom:auto; top:calc(100% + 2px); border-top-color:transparent; border-bottom-color:var(--ink); }
+[data-tip][data-tip-pos="right"]::after{
+  bottom:auto;top:50%;left:calc(100% + 8px);
+  transform:translateY(-50%) translateX(4px);
+}
+[data-tip][data-tip-pos="right"]::before{
+  bottom:auto;top:50%;left:calc(100% + 2px);
+  transform:translateY(-50%) translateX(4px);
+  border-top-color:transparent;border-right-color:var(--ink);
+}
+[data-tip][data-tip-pos="right"]:hover::after,
+[data-tip][data-tip-pos="right"]:focus-visible::after{
+  transform:translateY(-50%) translateX(0);
+}
+[data-tip][data-tip-pos="right"]:hover::before,
+[data-tip][data-tip-pos="right"]:focus-visible::before{
+  transform:translateY(-50%) translateX(0);
+}
+/* Don't show tooltips on touch devices */
+@media (hover: none){
+  [data-tip]::after,[data-tip]::before{display:none !important}
+}
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  [data-tip]::after,[data-tip]::before{transition:opacity .1s ease, visibility 0s linear}
+  [data-tip]:hover::after,[data-tip]:focus-visible::after,
+  [data-tip]:hover::before,[data-tip]:focus-visible::before{
+    transform:translateX(-50%);
+  }
+}
