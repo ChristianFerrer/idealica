@@ -754,8 +754,11 @@ button{font-family:inherit;cursor:pointer}
   font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
   text-transform:uppercase;font-weight:600;cursor:pointer;transition:.15s;
 }
-.period-btn:hover{color:var(--ink-2)}
-.period-btn.active{background:var(--ink);color:var(--lime)}
+.period-btn:hover{color:var(--ink-2);background:rgba(255,255,255,.03)}
+.period-btn.active{
+  background:#000;color:var(--lime);
+  box-shadow:inset 0 0 0 1px rgba(212,255,58,.35);
+}
 
 .metrics-funnel{
   display:flex;flex-direction:column;gap:10px;
