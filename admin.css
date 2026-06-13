@@ -121,9 +121,10 @@ button{font-family:inherit;cursor:pointer}
 
 /* ========= APP HEADER ========= */
 .admin-app{
-  max-width:1200px;
+  width:100%;
+  max-width:none;
   margin:0 auto;
-  padding:24px 24px 80px;
+  padding:24px clamp(20px, 3vw, 56px) 80px;
 }
 .admin-header{
   display:flex;align-items:center;justify-content:space-between;gap:16px;
@@ -740,7 +741,7 @@ button{font-family:inherit;cursor:pointer}
 /* ========= MÉTRICAS ========= */
 .metrics-head{
   display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
-  padding:30px 26px 18px;flex-wrap:wrap;
+  padding:30px 0 18px;flex-wrap:wrap;
 }
 .metrics-title{
   font-family:'Instrument Serif',serif;font-weight:400;
@@ -762,7 +763,7 @@ button{font-family:inherit;cursor:pointer}
 
 .metrics-funnel{
   display:flex;flex-direction:column;gap:10px;
-  padding:0 26px 24px;
+  padding:0 0 24px;
 }
 .funnel-step{
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;
@@ -803,7 +804,7 @@ button{font-family:inherit;cursor:pointer}
 
 .metrics-grid{
   display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;
-  padding:0 26px 30px;
+  padding:0 0 30px;
 }
 .metrics-card{
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;
@@ -855,14 +856,14 @@ button{font-family:inherit;cursor:pointer}
 
 @media (max-width:900px){
   .metrics-grid{grid-template-columns:1fr}
-  .metrics-head{padding:24px 20px 14px}
-  .metrics-funnel{padding:0 20px 20px}
-  .metrics-grid{padding:0 20px 24px}
+  .metrics-head{padding:24px 0 14px}
+  .metrics-funnel{padding:0 0 20px}
+  .metrics-grid{padding:0 0 24px}
   .bar-row{grid-template-columns:80px 1fr 40px}
 }
 
 /* ========= PROSPECTS ========= */
-.pview{padding:0 26px 30px}
+.pview{padding:0 0 30px}
 .pros-bulk-add{
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:14px;
   padding:14px 16px;margin-bottom:18px;
@@ -977,7 +978,7 @@ button{font-family:inherit;cursor:pointer}
 
 /* ICP cards */
 .icp-create{margin-bottom:14px}
-.icp-list{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.icp-list{display:grid;grid-template-columns:repeat(auto-fill, minmax(360px, 1fr));gap:14px}
 .icp-card{
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:14px;
   padding:18px 20px;display:flex;flex-direction:column;gap:8px;
@@ -1043,7 +1044,7 @@ button{font-family:inherit;cursor:pointer}
 }
 
 @media (max-width:900px){
-  .pview{padding:0 20px 24px}
+  .pview{padding:0 0 24px}
   .icp-list{grid-template-columns:1fr}
   .icp-modal-row{grid-template-columns:1fr}
 }
