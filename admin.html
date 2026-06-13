@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="admin.css?v=5" />
+<link rel="stylesheet" href="admin.css?v=6" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
@@ -186,6 +186,17 @@ function escapeHtml(s){
   }[c]));
 }
 
+// Flat line icons (stroke 1.6, currentColor)
+const ICONS = {
+  sparkle: '<svg class="ai-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>',
+  check:   '<svg class="ai-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>',
+  copy:    '<svg class="ai-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
+  ext:     '<svg class="ai-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4 10 14M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>',
+  mail:    '<svg class="ch-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  chat:    '<svg class="ch-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4Z"/></svg>',
+  bell:    '<svg class="ch-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 8 2 8H4s2-2 2-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+};
+
 function render(){
   // counts
   const counts = { pendiente:0, contactado:0, cerrado:0, descartado:0 };
@@ -232,8 +243,8 @@ function render(){
             <div class="ai-draft-head">
               <span class="ai-eyebrow">Borrador sugerido</span>
               <div class="ai-draft-actions">
-                <button type="button" class="ai-mini" data-action="copy-draft">Copiar</button>
-                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(l.ai_draft_reply)}" target="_blank" rel="noopener">Abrir en WhatsApp ↗</a>
+                <button type="button" class="ai-mini" data-action="copy-draft">${ICONS.copy}<span>Copiar</span></button>
+                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(l.ai_draft_reply)}" target="_blank" rel="noopener">${ICONS.ext}<span>Abrir en WhatsApp</span></a>
               </div>
             </div>
             <p class="ai-draft-text" data-draft-text>${escapeHtml(l.ai_draft_reply)}</p>
@@ -250,8 +261,8 @@ function render(){
             <div class="ai-variant-head">
               <span class="ai-variant-label">${escapeHtml(v.label || ('Variante ' + (i+1)))}</span>
               <div class="ai-draft-actions">
-                <button type="button" class="ai-mini" data-action="copy-variant" data-variant-idx="${i}">Copiar</button>
-                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(v.text)}" target="_blank" rel="noopener">WhatsApp ↗</a>
+                <button type="button" class="ai-mini" data-action="copy-variant" data-variant-idx="${i}">${ICONS.copy}<span>Copiar</span></button>
+                <a class="ai-mini ai-mini-primary" href="${waLink(l.whatsapp)}?text=${encodeURIComponent(v.text)}" target="_blank" rel="noopener">${ICONS.ext}<span>WhatsApp</span></a>
               </div>
             </div>
             <p class="ai-variant-text">${escapeHtml(v.text)}</p>
@@ -273,12 +284,12 @@ function render(){
       </button>
       <div class="lead-body" id="lead-body-${l.id}" hidden>
         <a class="lead-wa" href="${waLink(l.whatsapp)}" target="_blank" rel="noopener">
-          ${escapeHtml(l.whatsapp)} <span aria-hidden="true">↗ WhatsApp</span>
+          ${escapeHtml(l.whatsapp)} <span class="lead-wa-tag">${ICONS.ext}WhatsApp</span>
         </a>
         <p class="lead-msg-full">${escapeHtml(l.mensaje)}</p>
         ${triageBlock}
         <div class="ai-compose-row">
-          <button type="button" class="ai-compose-btn" data-action="compose">✨ Sugerir respuesta</button>
+          <button type="button" class="ai-compose-btn" data-action="compose">${ICONS.sparkle} Sugerir respuesta</button>
           <span class="ai-compose-hint" data-compose-hint hidden></span>
         </div>
         ${variantsBlock}
@@ -394,9 +405,9 @@ function render(){
 async function copyToClipboard(text, btn){
   try {
     await navigator.clipboard.writeText(text);
-    const original = btn.textContent;
-    btn.textContent = '✓ Copiado';
-    setTimeout(() => { btn.textContent = original; }, 1400);
+    const original = btn.innerHTML;
+    btn.innerHTML = ICONS.check + '<span>Copiado</span>';
+    setTimeout(() => { btn.innerHTML = original; }, 1400);
   } catch (e) {
     alert('No se pudo copiar: ' + (e.message || e));
   }
@@ -545,9 +556,9 @@ function renderTeam(){
 
     const editableHTML = canEdit ? `
       <div class="member-channels">
-        <label class="ch-toggle"><input type="checkbox" data-pref="notify_email" ${m.notify_email?'checked':''}><span>📧 Email</span></label>
-        <label class="ch-toggle"><input type="checkbox" data-pref="notify_whatsapp" ${m.notify_whatsapp?'checked':''}><span>💬 WhatsApp</span></label>
-        <label class="ch-toggle"><input type="checkbox" data-pref="notify_push" ${m.notify_push?'checked':''}><span>🔔 Push</span></label>
+        <label class="ch-toggle"><input type="checkbox" data-pref="notify_email" ${m.notify_email?'checked':''}><span>${ICONS.mail}Email</span></label>
+        <label class="ch-toggle"><input type="checkbox" data-pref="notify_whatsapp" ${m.notify_whatsapp?'checked':''}><span>${ICONS.chat}WhatsApp</span></label>
+        <label class="ch-toggle"><input type="checkbox" data-pref="notify_push" ${m.notify_push?'checked':''}><span>${ICONS.bell}Push</span></label>
       </div>
       <details class="member-config">
         <summary>Datos y credenciales</summary>
@@ -576,9 +587,9 @@ function renderTeam(){
       </details>
     ` : `
       <div class="member-channels member-channels-ro">
-        <span class="ch-badge ${m.notify_email?'on':'off'}">📧 ${m.notify_email?'Email':'—'}</span>
-        <span class="ch-badge ${m.notify_whatsapp?'on':'off'}">💬 ${m.notify_whatsapp?'WhatsApp':'—'}</span>
-        <span class="ch-badge ${m.notify_push?'on':'off'}">🔔 ${m.notify_push?'Push':'—'}</span>
+        <span class="ch-badge ${m.notify_email?'on':'off'}">${ICONS.mail}${m.notify_email?'Email':'—'}</span>
+        <span class="ch-badge ${m.notify_whatsapp?'on':'off'}">${ICONS.chat}${m.notify_whatsapp?'WhatsApp':'—'}</span>
+        <span class="ch-badge ${m.notify_push?'on':'off'}">${ICONS.bell}${m.notify_push?'Push':'—'}</span>
       </div>
     `;
 
