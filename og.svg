@@ -31,7 +31,7 @@
     <path d="M22 0 L26.7 14 L42 14 L29.8 23 L34.4 36.4 L22 28.5 L9.6 36.4 L14.2 23 L2 14 L17.3 14 Z"
           fill="#D4FF3A" transform="translate(-2,-2) scale(1.18)"/>
     <text x="64" y="32" fill="#FAFAFA" font-family="Space Grotesk, system-ui, sans-serif"
-          font-size="32" font-weight="600" letter-spacing="-0.5">Idealica</text>
+          font-size="32" font-weight="600" letter-spacing="-0.5">Blueberry</text>
   </g>
 
   <!-- Tagline / status -->
