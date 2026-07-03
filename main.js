@@ -1,4 +1,4 @@
-// Idealica — minimal vanilla JS for scroll-spy, cookie banner, sticky CTA
+// Mambo — minimal vanilla JS for scroll-spy, cookie banner, sticky CTA
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -75,7 +75,7 @@
     $('[data-cookie-reject]', banner)?.addEventListener('click', () => close('rejected'));
     $('[data-cookie-more]', banner)?.addEventListener('click', (e) => {
       e.preventDefault();
-      alert('Idealica usa Vercel Analytics — analítica de páginas vistas sin cookies de terceros, anónima y agregada. No vendemos datos ni hacemos retargeting. Si rechazas, no se carga.');
+      alert('Mambo usa Vercel Analytics — analítica de páginas vistas sin cookies de terceros, anónima y agregada. No vendemos datos ni hacemos retargeting. Si rechazas, no se carga.');
     });
   }
 
